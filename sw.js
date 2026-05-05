@@ -1,4 +1,4 @@
-const CACHE = 'training-log-v18';
+const CACHE = 'training-log-v19';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192px.png', './icon-512px.png'];
 
 self.addEventListener('install', e => {
