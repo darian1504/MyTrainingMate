@@ -254,7 +254,6 @@ function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDo
     const r = parseInt(repInput), k = parseFloat(kgInput);
     if (!r || !k || isNaN(r) || isNaN(k)) return;
     onAddSetEntry && onAddSetEntry({ reps:r, kg:k });
-    setRepInput(""); setKgInput("");
   };
   return (
     <div style={{ borderTop: dashed ? "1px dashed var(--rule)" : "1px solid var(--rule)", padding:"11px 0 8px" }}>
