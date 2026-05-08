@@ -294,13 +294,13 @@ function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDo
               <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color: checked ? "var(--ink-60)" : "var(--success)", fontVariantNumeric:"tabular-nums" }}>Set {i+1} · {e.reps} reps × {e.kg} kg</span>
             </div>
           ))}
-          <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:4 }}>
-            <input type="number" inputMode="numeric" placeholder={reps.split('-')[0]} value={repInput} onChange={e=>setRepInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleOk()}
+          <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:4, opacity: checked ? 0.35 : 1, pointerEvents: checked ? "none" : "auto", transition:"opacity 200ms" }}>
+            <input type="number" inputMode="numeric" placeholder={reps.split('-')[0]} value={repInput} onChange={e=>setRepInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleOk()} disabled={checked}
               style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:"1px solid var(--ink-30)", background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
             <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--ink-60)" }}>reps ×</span>
-            <input type="number" inputMode="decimal" placeholder="kg" min="0.1" step="0.5" value={kgInput} onChange={e=>{ const v=e.target.value; if(v===''||parseFloat(v)>=0) setKgInput(v); }} onKeyDown={e=>e.key==="Enter"&&handleOk()}
+            <input type="number" inputMode="decimal" placeholder="kg" min="0.1" step="0.5" value={kgInput} onChange={e=>{ const v=e.target.value; if(v===''||parseFloat(v)>=0) setKgInput(v); }} onKeyDown={e=>e.key==="Enter"&&handleOk()} disabled={checked}
               style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:"1px solid var(--ink-30)", background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
-            <button onClick={handleOk} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.12, textTransform:"uppercase", padding:"6px 12px", background:"var(--ink)", color:"var(--paper)", border:"none", cursor:"pointer", flexShrink:0 }}>OK</button>
+            <button onClick={handleOk} disabled={checked} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.12, textTransform:"uppercase", padding:"6px 12px", background:"var(--ink)", color:"var(--paper)", border:"none", cursor: checked ? "default" : "pointer", flexShrink:0 }}>OK</button>
             {detailedEntries.length > 0 && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", letterSpacing:0.08 }}>{detailedEntries.length} sets</span>}
           </div>
         </div>
