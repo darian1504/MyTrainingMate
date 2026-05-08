@@ -244,9 +244,18 @@ function GroupKey({ progress, targets }) {
 
 const REPS_GUIDE = { legs:"6-10", back:"8-12", chest:"8-12", arms:"10-15", shoulders:"10-15", abs:"15-20" };
 const SETS_MAIN = 4, SETS_ACC = 3;
+const { useState: useStateComp } = React;
 
-function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDone=0, setsTarget=3, onSetAdd, onRemove }) {
+function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDone=0, setsTarget=3, onSetAdd, onRemove, detailedMode=false, detailedEntries=[], onAddSetEntry }) {
+  const [repInput, setRepInput] = useStateComp("");
+  const [kgInput, setKgInput] = useStateComp("");
   const reps = REPS_GUIDE[ex.group] || "8-12";
+  const handleOk = () => {
+    const r = parseInt(repInput), k = parseFloat(kgInput);
+    if (!r || !k || isNaN(r) || isNaN(k)) return;
+    onAddSetEntry && onAddSetEntry({ reps:r, kg:k });
+    setRepInput(""); setKgInput("");
+  };
   return (
     <div style={{ borderTop: dashed ? "1px dashed var(--rule)" : "1px solid var(--rule)", padding:"11px 0 8px" }}>
       <div style={{ display:"flex", alignItems:"center", gap:12 }}>
@@ -271,10 +280,29 @@ function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDo
           </div>
         </div>
         {onRemove && (
-          <button onClick={onRemove} title="Remove from today" style={{ width:22, height:22, background:"transparent", border:"1px solid var(--rule)", color:"var(--ink-60)", cursor:"pointer", fontFamily:"var(--font-mono)", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>×</button>
+          <button onClick={onRemove} title="Remove" style={{ width:22, height:22, background:"transparent", border:"1px solid var(--rule)", color:"var(--ink-60)", cursor:"pointer", fontFamily:"var(--font-mono)", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>×</button>
         )}
       </div>
-      {onSetAdd && (
+      {detailedMode && onAddSetEntry && (
+        <div style={{ marginTop:10, paddingLeft:34 }}>
+          {detailedEntries.map((e, i) => (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="var(--success)" opacity="0.18"/><path d="M4 7.5l2 2 4-4" stroke="var(--success)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color:"var(--success)", fontVariantNumeric:"tabular-nums" }}>Set {i+1} · {e.reps} reps × {e.kg} kg</span>
+            </div>
+          ))}
+          <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:4 }}>
+            <input type="number" inputMode="numeric" placeholder={reps.split('-')[0]} value={repInput} onChange={e=>setRepInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleOk()}
+              style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:"1px solid var(--ink-30)", background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
+            <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--ink-60)" }}>reps ×</span>
+            <input type="number" inputMode="decimal" placeholder="kg" value={kgInput} onChange={e=>setKgInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleOk()}
+              style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:"1px solid var(--ink-30)", background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
+            <button onClick={handleOk} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.12, textTransform:"uppercase", padding:"6px 12px", background:"var(--ink)", color:"var(--paper)", border:"none", cursor:"pointer", flexShrink:0 }}>OK</button>
+            {detailedEntries.length > 0 && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", letterSpacing:0.08 }}>{detailedEntries.length} sets</span>}
+          </div>
+        </div>
+      )}
+      {!detailedMode && onSetAdd && (
         <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:8, paddingLeft:34 }}>
           <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", letterSpacing:0.1, minWidth:40 }}>{reps} reps</span>
           <div style={{ display:"flex", gap:4 }}>
@@ -308,11 +336,12 @@ function Rule({ label, style={} }) {
   );
 }
 
-function DayCard({ day, plan, dayColor, completed, total, isCurrent, isDone, onClick }) {
+function DayCard({ day, plan, dayColor, completed, total, isCurrent, isDone, onClick, onRemove }) {
   const pct = total ? completed/total : 0;
+  const subtitle = (plan.main && plan.main.length > 0) ? plan.main.map(id=>exerciseById(id).name).join(" · ") : (plan.sub || "");
   return (
     <button onClick={onClick} style={{
-      textAlign:"left", cursor:"pointer",
+      textAlign:"left", cursor:"pointer", width:"100%",
       background: isCurrent ? "var(--ink)" : "transparent",
       color: isCurrent ? "var(--paper)" : "var(--ink)",
       border: isCurrent ? "1px solid var(--ink)" : "1px solid var(--rule)",
@@ -324,11 +353,14 @@ function DayCard({ day, plan, dayColor, completed, total, isCurrent, isDone, onC
           <span style={{ width:10, height:10, borderRadius:999, background:dayColor, flexShrink:0 }}/>
           <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.18, textTransform:"uppercase", color: isCurrent?"rgba(255,255,255,0.6)":"var(--ink-60)" }}>Day {day}</div>
         </div>
-        {isDone && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.18, textTransform:"uppercase", color: isCurrent?"rgba(255,255,255,0.7)":"var(--accent)", border:`1px solid ${isCurrent?"rgba(255,255,255,0.35)":"var(--accent)"}`, borderRadius:2, padding:"2px 5px" }}>Done</span>}
-        {!isDone && isCurrent && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.18, textTransform:"uppercase", color:"var(--paper)", border:"1px solid rgba(255,255,255,0.4)", borderRadius:2, padding:"2px 5px" }}>Today</span>}
+        <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+          {isDone && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.18, textTransform:"uppercase", color: isCurrent?"rgba(255,255,255,0.7)":"var(--accent)", border:`1px solid ${isCurrent?"rgba(255,255,255,0.35)":"var(--accent)"}`, borderRadius:2, padding:"2px 5px" }}>Done</span>}
+          {!isDone && isCurrent && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.18, textTransform:"uppercase", color:"var(--paper)", border:"1px solid rgba(255,255,255,0.4)", borderRadius:2, padding:"2px 5px" }}>Today</span>}
+          {onRemove && <span onClick={e=>{e.stopPropagation();onRemove();}} style={{ width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"var(--font-mono)",fontSize:13,color:isCurrent?"rgba(255,255,255,0.7)":"var(--ink-60)",background:isCurrent?"rgba(255,255,255,0.15)":"var(--rule)",borderRadius:2,cursor:"pointer",flexShrink:0 }}>×</span>}
+        </div>
       </div>
       <div style={{ fontFamily:"var(--font-display)", fontSize:15, letterSpacing:-0.1, lineHeight:1.15, marginTop:6 }}>{plan.title}</div>
-      <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:0.08, textTransform:"uppercase", color: isCurrent?"rgba(255,255,255,0.6)":"var(--ink-60)", marginTop:2 }}>{plan.main.map(id=>exerciseById(id).name).join(" · ")}</div>
+      <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:0.08, textTransform:"uppercase", color: isCurrent?"rgba(255,255,255,0.6)":"var(--ink-60)", marginTop:2 }}>{subtitle}</div>
       <div style={{ height:2, background: isCurrent?"rgba(255,255,255,0.18)":"var(--rule)", marginTop:10, position:"relative" }}>
         <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${pct*100}%`, background: isCurrent?"var(--paper)":"var(--accent)", transition:"width 400ms ease" }}/>
       </div>
@@ -350,44 +382,107 @@ function computeProgress(completions) {
   return p;
 }
 
-// ── Body Map (muscle silhouette) ──
+// ── Body Map (anatomical muscle map with 3D shading) ──
 function BodyMap({ intensities={} }) {
-  const opa = g => { const i=intensities[g]||0; return i===0?0:0.18+i*0.82; };
-  const col = g => MG_COLORS[g];
-  const sil = (
-    <g fill="currentColor" opacity="0.12">
-      <ellipse cx="55" cy="20" rx="15" ry="18"/>
-      <path d="M49 36 L61 36 L63 48 L47 48Z"/>
-      <path d="M34 48 C24 50,15 56,13 68 L9 120 C9 134,12 144,18 148 L32 152 L78 152 L92 148 C98 144,101 134,101 120 L97 68 C95 56,86 50,76 48Z"/>
-      <path d="M8 58 C5 70,4 86,5 102 L8 130 L22 126 L18 80 L18 58Z"/>
-      <path d="M102 58 C105 70,106 86,105 102 L102 130 L88 126 L92 80 L92 58Z"/>
-      <path d="M5 104 C3 118,3 132,6 148 L11 170 L23 166 L19 132 L16 104Z"/>
-      <path d="M105 104 C107 118,107 132,104 148 L99 170 L87 166 L91 132 L94 104Z"/>
-      <path d="M20 154 L52 154 L54 232 L44 246 L22 246 L12 232Z"/>
-      <path d="M90 154 L58 154 L56 232 L66 246 L88 246 L98 232Z"/>
+  const opa = g => { const i=intensities[g]||0; return i===0?0:0.28+i*0.72; };
+  const bodySil = (
+    <g fill="currentColor" opacity="0.13">
+      <ellipse cx="60" cy="17" rx="13" ry="15"/>
+      <path d="M54 30 L60 32 L66 30 L67 38 L60 40 L53 38Z"/>
+      <path d="M32 40 C26 44,20 54,18 66 L14 106 C13 118,15 130,20 134 L35 138 L85 138 L100 134 C105 130,107 118,106 106 L102 66 C100 54,94 44,88 40 L67 38 L60 40 L53 38Z"/>
+      <path d="M13 44 C9 52,7 66,7 80 L7 112 C7 122,9 130,13 134 L22 136 L26 70 L20 46Z"/>
+      <path d="M107 44 C111 52,113 66,113 80 L113 112 C113 122,111 130,107 134 L98 136 L94 70 L100 46Z"/>
+      <path d="M6 114 C5 126,5 138,7 150 L10 170 L24 166 L22 132 L16 116Z"/>
+      <path d="M114 114 C115 126,115 138,113 150 L110 170 L96 166 L98 132 L104 116Z"/>
+      <path d="M19 136 L52 138 L54 200 L40 210 L22 202Z"/>
+      <path d="M101 136 L68 138 L66 200 L80 210 L98 202Z"/>
+      <path d="M21 204 L42 204 L44 246 L38 256 L22 248Z"/>
+      <path d="M99 204 L78 204 L76 246 L82 256 L98 248Z"/>
+      <path d="M21 248 L39 248 L39 278 L30 284 L20 276Z"/>
+      <path d="M99 248 L81 248 L81 278 L90 284 L100 276Z"/>
     </g>
   );
+  const FrontSVG = () => (
+    <svg viewBox="0 0 120 290" width={130} height={190} style={{display:'block',color:'var(--ink)'}}>
+      <defs>
+        {MUSCLE_GROUPS.map(g=>(
+          <radialGradient key={g} id={`rgf-${g}`} cx="50%" cy="38%" r="62%" fx="50%" fy="28%">
+            <stop offset="0%" stopColor={MG_COLORS[g]} stopOpacity="0.95"/>
+            <stop offset="70%" stopColor={MG_COLORS[g]} stopOpacity="0.55"/>
+            <stop offset="100%" stopColor={MG_COLORS[g]} stopOpacity="0.15"/>
+          </radialGradient>
+        ))}
+      </defs>
+      {bodySil}
+      {opa('shoulders')>0&&<g opacity={opa('shoulders')}>
+        <ellipse cx="16" cy="56" rx="11" ry="17" fill="url(#rgf-shoulders)"/>
+        <ellipse cx="104" cy="56" rx="11" ry="17" fill="url(#rgf-shoulders)"/>
+      </g>}
+      {opa('chest')>0&&<g opacity={opa('chest')}>
+        <path d="M34 44 L58 54 L58 88 L30 82 Z" fill="url(#rgf-chest)"/>
+        <path d="M86 44 L62 54 L62 88 L90 82 Z" fill="url(#rgf-chest)"/>
+      </g>}
+      {opa('abs')>0&&<g opacity={opa('abs')}>
+        <rect x="44" y="92" width="13" height="12" rx="4" fill="url(#rgf-abs)"/>
+        <rect x="63" y="92" width="13" height="12" rx="4" fill="url(#rgf-abs)"/>
+        <rect x="44" y="108" width="13" height="11" rx="4" fill="url(#rgf-abs)"/>
+        <rect x="63" y="108" width="13" height="11" rx="4" fill="url(#rgf-abs)"/>
+        <rect x="44" y="123" width="13" height="11" rx="4" fill="url(#rgf-abs)"/>
+        <rect x="63" y="123" width="13" height="11" rx="4" fill="url(#rgf-abs)"/>
+      </g>}
+      {opa('arms')>0&&<g opacity={opa('arms')}>
+        <path d="M9 48 L21 46 L20 104 L8 106Z" fill="url(#rgf-arms)"/>
+        <path d="M111 48 L99 46 L100 104 L112 106Z" fill="url(#rgf-arms)"/>
+      </g>}
+      {opa('legs')>0&&<g opacity={opa('legs')}>
+        <path d="M22 140 L52 140 L54 198 L38 206 L20 198Z" fill="url(#rgf-legs)"/>
+        <path d="M98 140 L68 140 L66 198 L82 206 L100 198Z" fill="url(#rgf-legs)"/>
+        <path d="M21 204 L42 204 L44 244 L36 252 L22 246Z" fill="url(#rgf-legs)" opacity="0.8"/>
+        <path d="M99 204 L78 204 L76 244 L84 252 L98 246Z" fill="url(#rgf-legs)" opacity="0.8"/>
+      </g>}
+    </svg>
+  );
+  const BackSVG = () => (
+    <svg viewBox="0 0 120 290" width={130} height={190} style={{display:'block',color:'var(--ink)'}}>
+      <defs>
+        {MUSCLE_GROUPS.map(g=>(
+          <radialGradient key={g} id={`rgb-${g}`} cx="50%" cy="38%" r="62%" fx="50%" fy="28%">
+            <stop offset="0%" stopColor={MG_COLORS[g]} stopOpacity="0.95"/>
+            <stop offset="70%" stopColor={MG_COLORS[g]} stopOpacity="0.55"/>
+            <stop offset="100%" stopColor={MG_COLORS[g]} stopOpacity="0.15"/>
+          </radialGradient>
+        ))}
+      </defs>
+      {bodySil}
+      {opa('back')>0&&<g opacity={opa('back')}>
+        <path d="M34 42 L60 52 L86 42 L90 72 L60 78 L30 72Z" fill="url(#rgb-back)"/>
+        <path d="M20 80 L54 82 L56 132 L34 140 L18 128Z" fill="url(#rgb-back)"/>
+        <path d="M100 80 L66 82 L64 132 L86 140 L102 128Z" fill="url(#rgb-back)"/>
+      </g>}
+      {opa('shoulders')>0&&<g opacity={opa('shoulders')*0.75}>
+        <ellipse cx="16" cy="56" rx="11" ry="17" fill="url(#rgb-shoulders)"/>
+        <ellipse cx="104" cy="56" rx="11" ry="17" fill="url(#rgb-shoulders)"/>
+      </g>}
+      {opa('arms')>0&&<g opacity={opa('arms')*0.8}>
+        <path d="M9 48 L21 46 L20 104 L8 106Z" fill="url(#rgb-arms)"/>
+        <path d="M111 48 L99 46 L100 104 L112 106Z" fill="url(#rgb-arms)"/>
+      </g>}
+      {opa('legs')>0&&<g opacity={opa('legs')}>
+        <path d="M22 140 L52 140 L54 196 L38 204 L20 196Z" fill="url(#rgb-legs)"/>
+        <path d="M98 140 L68 140 L66 196 L82 204 L100 196Z" fill="url(#rgb-legs)"/>
+        <path d="M21 200 L42 200 L44 244 L36 252 L22 246Z" fill="url(#rgb-legs)" opacity="0.85"/>
+        <path d="M99 200 L78 200 L76 244 L84 252 L98 246Z" fill="url(#rgb-legs)" opacity="0.85"/>
+      </g>}
+    </svg>
+  );
   return (
-    <div style={{display:'flex',gap:16,justifyContent:'center'}}>
+    <div style={{display:'flex',gap:12,justifyContent:'center'}}>
       <div style={{textAlign:'center'}}>
-        <svg viewBox="0 0 110 256" width={140} height={178} style={{display:'block',color:'var(--ink)'}}>
-          {sil}
-          {opa('shoulders')>0&&<><ellipse cx="13" cy="66" rx="14" ry="20" fill={col('shoulders')} opacity={opa('shoulders')}/><ellipse cx="97" cy="66" rx="14" ry="20" fill={col('shoulders')} opacity={opa('shoulders')}/></>}
-          {opa('chest')>0&&<path d="M34 50 L55 58 L76 50 L84 90 L55 97 L26 90Z" fill={col('chest')} opacity={opa('chest')}/>}
-          {opa('abs')>0&&<><rect x="39" y="98" width="32" height="13" rx="5" fill={col('abs')} opacity={opa('abs')}/><rect x="39" y="115" width="32" height="12" rx="5" fill={col('abs')} opacity={opa('abs')}/><rect x="39" y="131" width="32" height="12" rx="5" fill={col('abs')} opacity={opa('abs')}/></>}
-          {opa('arms')>0&&<><path d="M9 60 L21 58 L18 112 L7 114Z" fill={col('arms')} opacity={opa('arms')}/><path d="M101 60 L89 58 L92 112 L103 114Z" fill={col('arms')} opacity={opa('arms')}/></>}
-          {opa('legs')>0&&<><path d="M23 156 L51 156 L53 228 L36 236 L20 228Z" fill={col('legs')} opacity={opa('legs')}/><path d="M87 156 L59 156 L57 228 L74 236 L90 228Z" fill={col('legs')} opacity={opa('legs')}/></>}
-        </svg>
+        <FrontSVG/>
         <div style={{fontFamily:'var(--font-mono)',fontSize:7.5,letterSpacing:0.18,textTransform:'uppercase',color:'var(--ink-60)',marginTop:4}}>Front</div>
       </div>
       <div style={{textAlign:'center'}}>
-        <svg viewBox="0 0 110 256" width={140} height={178} style={{display:'block',color:'var(--ink)'}}>
-          {sil}
-          {opa('back')>0&&<><path d="M36 50 L55 58 L74 50 L80 76 L55 80 L30 76Z" fill={col('back')} opacity={opa('back')}/><path d="M18 82 L50 82 L52 140 L30 148 L16 128Z" fill={col('back')} opacity={opa('back')}/><path d="M92 82 L60 82 L58 140 L80 148 L94 128Z" fill={col('back')} opacity={opa('back')}/></>}
-          {opa('shoulders')>0&&<><ellipse cx="13" cy="64" rx="13" ry="18" fill={col('shoulders')} opacity={opa('shoulders')*0.6}/><ellipse cx="97" cy="64" rx="13" ry="18" fill={col('shoulders')} opacity={opa('shoulders')*0.6}/></>}
-          {opa('arms')>0&&<><path d="M9 60 L21 58 L17 112 L6 114Z" fill={col('arms')} opacity={opa('arms')*0.7}/><path d="M101 60 L89 58 L93 112 L104 114Z" fill={col('arms')} opacity={opa('arms')*0.7}/></>}
-          {opa('legs')>0&&<><path d="M22 154 L52 154 L54 198 L36 204 L20 198Z" fill={col('legs')} opacity={opa('legs')}/><path d="M88 154 L58 154 L56 198 L74 204 L90 198Z" fill={col('legs')} opacity={opa('legs')}/><path d="M22 200 L52 200 L52 234 L36 242 L20 234Z" fill={col('legs')} opacity={opa('legs')*0.8}/><path d="M88 200 L58 200 L58 234 L74 242 L90 234Z" fill={col('legs')} opacity={opa('legs')*0.8}/></>}
-        </svg>
+        <BackSVG/>
         <div style={{fontFamily:'var(--font-mono)',fontSize:7.5,letterSpacing:0.18,textTransform:'uppercase',color:'var(--ink-60)',marginTop:4}}>Back</div>
       </div>
     </div>
@@ -426,6 +521,13 @@ function Dashboard({ state, dispatch, navigate, setShowPaywall }) {
           </div>
         </div>
         <div style={{ display:"flex", gap:8, paddingTop:6 }}>
+          <button onClick={() => dispatch({ type:"TOGGLE_THEME" })} title={state.theme==='ink'?"Light mode":"Dark mode"}
+            style={{ width:36, height:36, background:"transparent", border:"1px solid var(--rule)", cursor:"pointer", color:"var(--ink-60)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            {state.theme==='ink'
+              ? <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" fill="currentColor"/><line x1="8" y1="1.5" x2="8" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="8" y1="13" x2="8" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="1.5" y1="8" x2="3" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="13" y1="8" x2="14.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="3.4" y1="3.4" x2="4.4" y2="4.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="11.6" y1="11.6" x2="12.6" y2="12.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="3.4" y1="12.6" x2="4.4" y2="11.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="11.6" y1="4.4" x2="12.6" y2="3.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              : <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 9.5A6 6 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z" fill="currentColor"/></svg>
+            }
+          </button>
           <button onClick={() => navigate({screen:'analytics'})} title="Analytics"
             style={{ width:36, height:36, background:"transparent", border:"1px solid var(--rule)", cursor:"pointer", color:"var(--ink-60)", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="9" width="2.5" height="5" rx="1" fill="currentColor"/><rect x="6.75" y="6" width="2.5" height="8" rx="1" fill="currentColor"/><rect x="11.5" y="3" width="2.5" height="11" rx="1" fill="currentColor"/></svg>
@@ -515,14 +617,11 @@ function Dashboard({ state, dispatch, navigate, setShowPaywall }) {
               const isDone = splitCompletedDays.includes(d);
               const dayExtra = splitCompletions.filter(c=>c.day===d&&c.slot>=1000).length;
               return (
-                <div key="extra" style={{ position:"relative" }}>
-                  <DayCard day={d} plan={{ title: extraDays[activeSplit]?.title||"Extra Day", sub:"Optional · your exercises", main:[], other:[] }}
-                    dayColor="oklch(0.62 0.06 250)" completed={dayExtra} total={Math.max(dayExtra,1)}
-                    isCurrent={d===currentDay&&!isDone} isDone={isDone}
-                    onClick={() => navigate({ screen:"day", dayId:d })}/>
-                  <button onClick={() => dispatch({ type:"REMOVE_EXTRA_DAY", split:activeSplit })}
-                    style={{ position:"absolute", top:4, right:4, width:20, height:20, background:"rgba(0,0,0,0.6)", color:"#fff", border:"none", cursor:"pointer", fontFamily:"var(--font-mono)", fontSize:11, display:"flex", alignItems:"center", justifyContent:"center", zIndex:1 }}>×</button>
-                </div>
+                <DayCard key="extra" day={d} plan={{ title: extraDays[activeSplit]?.title||"Extra Day", sub:"Optional · your exercises", main:[], other:[] }}
+                  dayColor="oklch(0.62 0.06 250)" completed={dayExtra} total={Math.max(dayExtra,1)}
+                  isCurrent={d===currentDay&&!isDone} isDone={isDone}
+                  onClick={() => navigate({ screen:"day", dayId:d })}
+                  onRemove={() => dispatch({ type:"REMOVE_EXTRA_DAY", split:activeSplit })}/>
               );
             })()}
           </div>
@@ -568,7 +667,7 @@ function Dashboard({ state, dispatch, navigate, setShowPaywall }) {
 
 // ── Day Screen ──
 function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywall }) {
-  const { activeSplit, completions, completedDays, setsLog, hiddenSlots, customPlan, detailedMode, extraPlan: stateExtraPlan } = state;
+  const { activeSplit, completions, completedDays, setsLog, hiddenSlots, customPlan, detailedMode, extraPlan: stateExtraPlan, detailedSets: stateDetailedSets } = state;
   const isCustom = activeSplit === 'custom';
   const splitData = isCustom ? customPlan : SPLITS[activeSplit];
   const isExtraDay = !isCustom && dayId > splitData.days.length;
@@ -621,6 +720,9 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
   const catalogHasResults = MUSCLE_GROUPS.some(g=>filteredCatalog[g].length>0);
 
   const getSets = (slot, tgt) => ({ done: splitSets[`${dayId}_${slot}`]||0, target:tgt });
+  const splitDetailedSets = (stateDetailedSets||{})[activeSplit] || {};
+  const getDetailedEntries = slot => splitDetailedSets[`${dayId}_${slot}`] || [];
+  const mkAddSetEntry = slot => e => dispatch({ type:"ADD_SET_ENTRY", split:activeSplit, day:dayId, slot, reps:e.reps, kg:e.kg });
 
   return (
     <div style={{ padding:"8px 24px 120px", fontFamily:"var(--font-body)", color:"var(--ink)" }}>
@@ -660,7 +762,7 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
         return <ExerciseRow key={`m-${i}`} ex={ex} isMain checked={plannedDone.has(i)}
           onToggle={() => dispatch({ type:plannedDone.has(i)?"UNCHECK":"CHECK", split:activeSplit, day:dayId, slot:i, id })}
           setsDone={s.done} setsTarget={s.target}
-          onSetAdd={detailedMode ? ()=>dispatch({ type:"ADD_SET", split:activeSplit, day:dayId, slot:i, target:SETS_MAIN }) : null}
+          detailedMode={detailedMode} detailedEntries={getDetailedEntries(i)} onAddSetEntry={mkAddSetEntry(i)}
           onRemove={() => dispatch({ type:"HIDE_SLOT", split:activeSplit, day:dayId, slot:i })}/>;
       })}
 
@@ -674,7 +776,7 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
         return <ExerciseRow key={`o-${i}`} ex={ex} checked={plannedDone.has(slot)}
           onToggle={() => dispatch({ type:plannedDone.has(slot)?"UNCHECK":"CHECK", split:activeSplit, day:dayId, slot, id })}
           setsDone={s.done} setsTarget={s.target}
-          onSetAdd={detailedMode ? ()=>dispatch({ type:"ADD_SET", split:activeSplit, day:dayId, slot, target:SETS_ACC }) : null}
+          detailedMode={detailedMode} detailedEntries={getDetailedEntries(slot)} onAddSetEntry={mkAddSetEntry(slot)}
           onRemove={() => dispatch({ type:"HIDE_SLOT", split:activeSplit, day:dayId, slot })}/>;
       })}
       {extras.map(e => {
@@ -682,7 +784,7 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
         return <ExerciseRow key={`e-${e.slot}`} ex={exerciseById(e.id)} checked={e.checked} dashed
           onToggle={() => dispatch({ type:e.checked?"UNCHECK":"CHECK", split:activeSplit, day:dayId, slot:e.slot, id:e.id })}
           setsDone={s.done} setsTarget={s.target}
-          onSetAdd={detailedMode ? ()=>dispatch({ type:"ADD_SET", split:activeSplit, day:dayId, slot:e.slot, target:SETS_ACC }) : null}
+          detailedMode={detailedMode} detailedEntries={getDetailedEntries(e.slot)} onAddSetEntry={mkAddSetEntry(e.slot)}
           onRemove={() => dispatch({ type:"REMOVE_EXTRA", split:activeSplit, day:dayId, slot:e.slot })}/>;
       })}
       {(mainIds.length > 0 || otherIds.length > 0 || extras.length > 0) && <div style={{ borderTop:"1px solid var(--ink)" }}/>}
@@ -751,19 +853,29 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
       </div>
 
       {/* Complete / Reset */}
-      <div style={{ marginTop:32, display:"flex", gap:10 }}>
-        {dayId < splitData.days.length ? (
-          !isDone
-            ? <button onClick={() => { dispatch({ type:"COMPLETE_DAY", split:activeSplit, day:dayId }); navigate({ screen:"day", dayId:dayId+1 }); }}
-                style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", borderRadius:0, cursor:"pointer" }}>✓ Complete Day {dayId}</button>
-            : <div style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--accent)", color:"#fff", textAlign:"center" }}>Day {dayId} Done</div>
-        ) : (
-          <button onClick={() => { dispatch({ type:"RESET_SPLIT", split:activeSplit }); navigate({ screen:"home" }); }}
-            style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", borderRadius:0, cursor:"pointer" }}>↺ Reset Week</button>
-        )}
-        <button onClick={() => dispatch({ type:"RESET_DAY", split:activeSplit, day:dayId })}
-          style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.12, textTransform:"uppercase", padding:"16px 14px", background:"transparent", color:"var(--ink)", border:"1px solid var(--rule)", borderRadius:0, cursor:"pointer" }}>Reset</button>
-      </div>
+      {(() => {
+        const totalSplitDays = splitData.days.length + (state.extraDays?.[activeSplit]?.enabled ? 1 : 0);
+        const isLastDay = dayId >= totalSplitDays;
+        const allPrevDone = splitCompletedDays.length + (isDone ? 0 : 1) >= totalSplitDays;
+        return (
+          <div style={{ marginTop:32, display:"flex", gap:10 }}>
+            {isLastDay ? (
+              isDone
+                ? <button onClick={() => { dispatch({ type:"COMPLETE_WEEK", split:activeSplit }); navigate({ screen:"analytics" }); }}
+                    style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--accent)", color:"#fff", border:"none", borderRadius:0, cursor:"pointer" }}>✓ Complete Week →</button>
+                : <button onClick={() => { dispatch({ type:"COMPLETE_DAY", split:activeSplit, day:dayId }); }}
+                    style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", borderRadius:0, cursor:"pointer" }}>✓ Complete Day {dayId}</button>
+            ) : (
+              isDone
+                ? <div style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--accent)", color:"#fff", textAlign:"center" }}>Day {dayId} Done</div>
+                : <button onClick={() => { dispatch({ type:"COMPLETE_DAY", split:activeSplit, day:dayId }); navigate({ screen:"day", dayId:dayId+1 }); }}
+                    style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", borderRadius:0, cursor:"pointer" }}>✓ Complete Day {dayId}</button>
+            )}
+            <button onClick={() => dispatch({ type:"RESET_DAY", split:activeSplit, day:dayId })}
+              style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.12, textTransform:"uppercase", padding:"16px 14px", background:"transparent", color:"var(--ink)", border:"1px solid var(--rule)", borderRadius:0, cursor:"pointer" }}>Reset</button>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -801,6 +913,49 @@ function PaywallModal({ onClose, onUpgrade }) {
             or $9.99 AUD / year · Cancel anytime
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function WorkoutCalendar({ weekHistory }) {
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const workoutDays = new Set();
+  weekHistory.forEach(w => {
+    const d = new Date(w.completedAt);
+    if (d.getFullYear()===year && d.getMonth()===month) workoutDays.add(d.getDate());
+  });
+  const cells = [];
+  for (let i=0; i<firstDow; i++) cells.push(null);
+  for (let d=1; d<=daysInMonth; d++) cells.push(d);
+  const monthLabel = now.toLocaleDateString("en-AU", { month:"long", year:"numeric" });
+  return (
+    <div>
+      <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.14, textTransform:"uppercase", color:"var(--ink-60)", marginBottom:10, textAlign:"center" }}>{monthLabel}</div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2, marginBottom:4 }}>
+        {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d=>(
+          <div key={d} style={{ textAlign:"center", fontFamily:"var(--font-mono)", fontSize:7.5, letterSpacing:0.1, textTransform:"uppercase", color:"var(--ink-60)", padding:"3px 0" }}>{d}</div>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
+        {cells.map((d,i) => {
+          if (!d) return <div key={`e${i}`}/>;
+          const isToday = d===now.getDate();
+          const hasWorkout = workoutDays.has(d);
+          return (
+            <div key={d} style={{
+              aspectRatio:"1", display:"flex", alignItems:"center", justifyContent:"center",
+              background: isToday ? "var(--ink)" : hasWorkout ? "var(--accent-tint)" : "transparent",
+              border: `1px solid ${isToday ? "var(--ink)" : hasWorkout ? "var(--accent)" : "var(--rule)"}`,
+              borderRadius:3, position:"relative",
+            }}>
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontVariantNumeric:"tabular-nums", color: isToday ? "var(--paper)" : hasWorkout ? "var(--accent)" : "var(--ink-60)" }}>{d}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -849,6 +1004,8 @@ function AnalyticsScreen({ state, navigate }) {
           </div>
         ))}
       </div>
+      <Rule label="Calendar"/>
+      <WorkoutCalendar weekHistory={weekHistory}/>
       <Rule label="Muscle Map"/>
       {hasData ? <BodyMap intensities={bodyIntensity}/> : (
         <div style={{ textAlign:"center", padding:"24px 0", fontFamily:"var(--font-mono)", fontSize:10, color:"var(--ink-60)", letterSpacing:0.12 }}>Train to see your muscle heat map</div>
@@ -926,9 +1083,9 @@ function AnalyticsScreen({ state, navigate }) {
 }
 
 function ProfileScreen({ state, dispatch }) {
-  const { measurements={}, bodyLog=[], detailedMode } = state;
-  const [weightInput, setWeightInput] = useState("");
+  const { measurements={}, detailedMode } = state;
   const MEASURES = [
+    { key:"weight_kg", label:"Weight", unit:"kg" },
     { key:"height_cm", label:"Height", unit:"cm" },
     { key:"body_fat", label:"Body Fat", unit:"%" },
     { key:"chest_cm", label:"Chest", unit:"cm" },
@@ -938,12 +1095,6 @@ function ProfileScreen({ state, dispatch }) {
     { key:"thigh_cm", label:"Thigh", unit:"cm" },
     { key:"calf_cm", label:"Calf", unit:"cm" },
   ];
-  const handleLogWeight = () => {
-    const kg = parseFloat(weightInput);
-    if (!kg || isNaN(kg)) return;
-    dispatch({ type:"LOG_BODY_WEIGHT", kg });
-    setWeightInput("");
-  };
   const handleExport = () => {
     const json = JSON.stringify(state, null, 2);
     const blob = new Blob([json], { type:"application/json" });
@@ -972,34 +1123,11 @@ function ProfileScreen({ state, dispatch }) {
           </div>
         ))}
       </div>
-      <Rule label="Body Weight"/>
-      <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-        <input type="number" placeholder="kg" value={weightInput} onChange={e=>setWeightInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogWeight()}
-          style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:15, padding:"11px 12px", border:"1px solid var(--ink-30)", background:"transparent", color:"var(--ink)", outline:"none", boxSizing:"border-box" }}/>
-        <button onClick={handleLogWeight} style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.14, textTransform:"uppercase", padding:"11px 16px", background:"var(--ink)", color:"var(--paper)", border:"none", cursor:"pointer" }}>Log</button>
-      </div>
-      {bodyLog.length > 0 && (
-        <div style={{ marginBottom:8 }}>
-          {[...bodyLog].reverse().slice(0,12).map((entry,i,arr)=>{
-            const d=new Date(entry.date), dateStr=d.toLocaleDateString("en-AU",{day:"numeric",month:"short"});
-            const prev=arr[i+1], diff=prev?entry.kg-prev.kg:null;
-            return (
-              <div key={entry.date} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 0", borderBottom:"1px solid var(--rule)" }}>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:10.5, color:"var(--ink-60)" }}>{dateStr}</span>
-                <span style={{ fontFamily:"var(--font-mono)", fontSize:13, fontVariantNumeric:"tabular-nums" }}>
-                  {entry.kg} kg
-                  {diff!==null&&<span style={{ marginLeft:10, fontSize:10.5, color:diff<0?"var(--success)":diff>0?"var(--accent)":"var(--ink-60)" }}>{diff>0?"+":""}{diff.toFixed(1)}</span>}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
       <Rule label="Settings"/>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 0", borderBottom:"1px solid var(--rule)" }}>
         <div>
           <div style={{ fontFamily:"var(--font-display)", fontSize:16 }}>Tracking Mode</div>
-          <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, color:"var(--ink-60)", marginTop:2 }}>{detailedMode?"Sets + reps tracking":"Exercise checklist only"}</div>
+          <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, color:"var(--ink-60)", marginTop:2 }}>{detailedMode?"Sets + reps per exercise":"Exercise checklist only"}</div>
         </div>
         <button onClick={()=>dispatch({type:"TOGGLE_DETAILED"})}
           style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.1, textTransform:"uppercase", padding:"6px 12px", background:detailedMode?"var(--accent)":"transparent", color:detailedMode?"#fff":"var(--ink)", border:`1px solid ${detailedMode?"var(--accent)":"var(--ink-30)"}`, cursor:"pointer" }}>
@@ -1016,39 +1144,7 @@ function ProfileScreen({ state, dispatch }) {
   );
 }
 
-  const totalChecked = weekHistory.reduce((s,w)=>s+w.completions.filter(c=>c.slot<1000).length,0);
-  const splitCounts = {};
-  weekHistory.forEach(w => splitCounts[w.split]=(splitCounts[w.split]||0)+1);
-  const favSplitEntry = Object.entries(splitCounts).sort((a,b)=>b[1]-a[1])[0];
-  const favSplitLabel = favSplitEntry ? (SPLITS[favSplitEntry[0]]?.label||"Custom").split("/")[0].trim() : "—";
-
-  const exerciseFreq = {};
-  weekHistory.forEach(w => w.completions.filter(c=>c.slot<1000).forEach(c=>{
-    exerciseFreq[c.id]=(exerciseFreq[c.id]||0)+1;
-  }));
-
-  const topExercises = Object.entries(exerciseFreq).sort((a,b)=>b[1]-a[1]).slice(0,5);
-
-  const splitDays = activeSplit==='custom' ? (customPlan?.days||[]) : (SPLITS[activeSplit]?.days||[]);
-  const planIds = [...new Set(splitDays.flatMap(d=>[...(d.main||[]),...(d.other||[])]))];
-  const leastDone = planIds.map(id=>({id,count:exerciseFreq[id]||0})).sort((a,b)=>a.count-b.count).slice(0,5);
-
-  const muscleVol = {};
-  MUSCLE_GROUPS.forEach(g=>muscleVol[g]=0);
-  weekHistory.forEach(w=>w.completions.filter(c=>c.slot<1000).forEach(c=>{
-    const ex=exerciseById(c.id); if(ex.group) muscleVol[ex.group]++;
-  }));
-  const maxVol = Math.max(1,...Object.values(muscleVol));
-
-  const handleLogWeight = () => {
-    const kg = parseFloat(weightInput);
-    if (!kg || isNaN(kg)) return;
-    dispatch({ type:"LOG_BODY_WEIGHT", kg });
-    setWeightInput("");
-  };
-
-
-Object.assign(window, { BodyMap, Dashboard, DayScreen, AnalyticsScreen, ProfileScreen, PaywallModal, computeProgress });
+Object.assign(window, { WorkoutCalendar, BodyMap, Dashboard, DayScreen, AnalyticsScreen, ProfileScreen, PaywallModal, computeProgress });
 </script>
 
 <!-- ═══ APP ═══ -->
@@ -1073,9 +1169,11 @@ const INITIAL_STATE = {
   setsLog:       { pushPull:{}, upperLower:{}, fullBody:{}, custom:{} },
   hiddenSlots:   { pushPull:{}, upperLower:{}, fullBody:{}, custom:{} },
   extraPlan:     { pushPull:{}, upperLower:{}, fullBody:{}, custom:{} },
+  detailedSets:  { pushPull:{}, upperLower:{}, fullBody:{}, custom:{} },
   customPlan:    { days:[] },
   extraDays:     { pushPull:null, upperLower:null, fullBody:null },
   detailedMode:  false,
+  theme:         'paper',
   isPro:         false,
   weekHistory:   [],
   bodyLog:       [],
@@ -1096,9 +1194,11 @@ function loadState() {
       setsLog:       { ...INITIAL_STATE.setsLog,       ...(parsed.setsLog       || {}) },
       hiddenSlots:   { ...INITIAL_STATE.hiddenSlots,   ...(parsed.hiddenSlots   || {}) },
       extraPlan:     { ...INITIAL_STATE.extraPlan,     ...(parsed.extraPlan     || {}) },
+      detailedSets:  { ...INITIAL_STATE.detailedSets,  ...(parsed.detailedSets  || {}) },
       customPlan:    parsed.customPlan    || { days:[] },
       extraDays:     { ...INITIAL_STATE.extraDays,     ...(parsed.extraDays     || {}) },
       detailedMode:  parsed.detailedMode  || false,
+      theme:         parsed.theme         || 'paper',
       isPro:         parsed.isPro         || false,
       weekHistory:   parsed.weekHistory   || [],
       bodyLog:       parsed.bodyLog       || [],
@@ -1120,6 +1220,16 @@ function reducer(state, action) {
 
     case "TOGGLE_DETAILED":
       return { ...state, detailedMode: !state.detailedMode };
+
+    case "TOGGLE_THEME":
+      return { ...state, theme: state.theme === 'ink' ? 'paper' : 'ink' };
+
+    case "ADD_SET_ENTRY": {
+      const ds = state.detailedSets || {};
+      const splitDs = ds[split] || {};
+      const key = `${action.day}_${action.slot}`;
+      return { ...state, detailedSets: { ...ds, [split]: { ...splitDs, [key]: [...(splitDs[key]||[]), { reps:action.reps, kg:action.kg }] } } };
+    }
 
     case "CHECK":
       if (sc.some(c=>c.day===action.day && c.slot===action.slot)) return state;
@@ -1190,18 +1300,22 @@ function reducer(state, action) {
     case "COMPLETE_DAY": {
       const days = sd.includes(action.day) ? sd : [...sd, action.day];
       const splitDays = split === 'custom' ? (state.customPlan?.days||[]) : (SPLITS[split]?.days||[]);
-      if (days.length >= splitDays.length) {
-        const weekEntry = { id: Date.now(), split, completedAt: Date.now(), completions: [...sc], setsLog: { ...ss } };
-        return { ...state,
-          completions:   { ...state.completions,   [split]:[] },
-          completedDays: { ...state.completedDays, [split]:[] },
-          setsLog:       { ...state.setsLog,       [split]:{} },
-          hiddenSlots:   { ...state.hiddenSlots,   [split]:{} },
-          extraPlan:     { ...(state.extraPlan||{}), [split]:{} },
-          weekHistory:   [...(state.weekHistory||[]), weekEntry],
-        };
-      }
-      return { ...state, completedDays: { ...state.completedDays, [split]:days } };
+      const newCompletedDays = { ...state.completedDays, [split]:days };
+      return { ...state, completedDays: newCompletedDays };
+    }
+
+    case "COMPLETE_WEEK": {
+      const ds = (state.detailedSets||{})[split] || {};
+      const weekEntry = { id: Date.now(), split, completedAt: Date.now(), completions: [...sc], setsLog: { ...ss }, detailedSets: { ...ds } };
+      return { ...state,
+        completions:   { ...state.completions,   [split]:[] },
+        completedDays: { ...state.completedDays, [split]:[] },
+        setsLog:       { ...state.setsLog,       [split]:{} },
+        hiddenSlots:   { ...state.hiddenSlots,   [split]:{} },
+        extraPlan:     { ...(state.extraPlan||{}), [split]:{} },
+        detailedSets:  { ...(state.detailedSets||{}), [split]:{} },
+        weekHistory:   [...(state.weekHistory||[]), weekEntry],
+      };
     }
 
     case "RESET_DAY": {
@@ -1209,12 +1323,15 @@ function reducer(state, action) {
       Object.keys(newSets).forEach(k => { if (k.startsWith(`${action.day}_`)) delete newSets[k]; });
       const newHidden = { ...sh }; delete newHidden[action.day];
       const newEP = { ...((state.extraPlan||{})[split]||{}) }; delete newEP[action.day];
+      const newDs = { ...((state.detailedSets||{})[split]||{}) };
+      Object.keys(newDs).forEach(k => { if (k.startsWith(`${action.day}_`)) delete newDs[k]; });
       return { ...state,
         completions:   { ...state.completions,   [split]:sc.filter(c=>c.day!==action.day) },
         completedDays: { ...state.completedDays, [split]:sd.filter(d=>d!==action.day) },
         setsLog:       { ...state.setsLog,       [split]:newSets },
         hiddenSlots:   { ...state.hiddenSlots,   [split]:newHidden },
         extraPlan:     { ...(state.extraPlan||{}), [split]:newEP },
+        detailedSets:  { ...(state.detailedSets||{}), [split]:newDs },
       };
     }
 
@@ -1225,6 +1342,7 @@ function reducer(state, action) {
         setsLog:       { ...state.setsLog,       [split]:{} },
         hiddenSlots:   { ...state.hiddenSlots,   [split]:{} },
         extraPlan:     { ...(state.extraPlan||{}), [split]:{} },
+        detailedSets:  { ...(state.detailedSets||{}), [split]:{} },
       };
 
     case "ADD_CUSTOM_DAY": {
@@ -1257,7 +1375,7 @@ function App() {
   });
   useEffectApp(() => { localStorage.setItem("tl-route", JSON.stringify(route)); }, [route]);
 
-  const [tweaks, setTweaks] = useStateApp({ accent:"vermilion", variant:"paper", typePair:"serif-geist" });
+  const [tweaks, setTweaks] = useStateApp({ accent:"vermilion", typePair:"serif-geist" });
   const [tweaksOn, setTweaksOn] = useStateApp(false);
   useEffectApp(() => {
     const h = e => { if(e.data?.type==="__activate_edit_mode") setTweaksOn(true); if(e.data?.type==="__deactivate_edit_mode") setTweaksOn(false); };
@@ -1266,7 +1384,8 @@ function App() {
     return () => window.removeEventListener("message",h);
   },[]);
 
-  const v = VARIANTS[tweaks.variant]||VARIANTS.paper;
+  const variant = state.theme || 'paper';
+  const v = VARIANTS[variant] || VARIANTS.paper;
   const p = TYPE_PAIRS[tweaks.typePair]||TYPE_PAIRS["serif-geist"];
   const cssVars = {
     "--paper":v.paper,"--ink":v.ink,"--ink-60":v.ink60,"--ink-30":v.ink30,
@@ -1320,12 +1439,12 @@ function App() {
   return (
     <div style={{
       minHeight:"100vh",
-      background: tweaks.variant==="ink"
+      background: variant==="ink"
         ? "radial-gradient(ellipse at top,oklch(0.22 0.01 260),oklch(0.12 0.01 260))"
         : "radial-gradient(ellipse at top,oklch(0.93 0.01 80),oklch(0.86 0.015 70))",
       display:"flex", alignItems:"center", justifyContent:"center", padding:"40px 20px", ...cssVars,
     }}>
-      <IOSDevice width={390} height={844} dark={tweaks.variant==="ink"}>
+      <IOSDevice width={390} height={844} dark={variant==="ink"}>
         <div style={{ minHeight:"100%", background:"var(--paper)", paddingTop:54, position:"relative" }}>
           {renderScreen()}
           <BottomNav/>
