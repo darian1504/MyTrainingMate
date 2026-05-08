@@ -802,8 +802,8 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
       })}
       {(mainIds.length > 0 || otherIds.length > 0 || extras.length > 0) && <div style={{ borderTop:"1px solid var(--ink)" }}/>}
 
-      {/* Lagging muscles */}
-      {laggingGroups.length > 0 && (
+      {/* Lagging muscles — Pro only */}
+      {isPro && laggingGroups.length > 0 && (
         <>
           <Rule label="Fill the Gap · Lagging This Week"/>
           {laggingGroups.map(g => (
@@ -824,18 +824,6 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
               </div>
             </div>
           ))}
-          {!isPro && (
-            <div style={{ border:"1px dashed var(--accent)", padding:"13px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, marginBottom:6 }}>
-              <div>
-                <div style={{ fontFamily:"var(--font-display)", fontSize:15, letterSpacing:-0.1 }}>Smart Auto-Balance</div>
-                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.1, color:"var(--ink-60)", textTransform:"uppercase", marginTop:3 }}>Adapts to machine availability · Pro</div>
-              </div>
-              <button onClick={() => setShowPaywall && setShowPaywall(true)}
-                style={{ flexShrink:0, fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.12, textTransform:"uppercase", padding:"8px 12px", background:"var(--accent)", color:"#fff", border:"none", cursor:"pointer" }}>
-                Upgrade →
-              </button>
-            </div>
-          )}
         </>
       )}
 
