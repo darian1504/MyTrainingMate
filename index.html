@@ -856,23 +856,22 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
       {(() => {
         const totalSplitDays = splitData.days.length + (state.extraDays?.[activeSplit]?.enabled ? 1 : 0);
         const isLastDay = dayId >= totalSplitDays;
-        const allPrevDone = splitCompletedDays.length + (isDone ? 0 : 1) >= totalSplitDays;
+        const btnBase = { flex:1, fontFamily:"var(--font-mono)", letterSpacing:0.16, textTransform:"uppercase", padding:"16px", borderRadius:0, cursor:"pointer" };
         return (
-          <div style={{ marginTop:32, display:"flex", gap:10 }}>
+          <div style={{ marginTop:32, display:"flex", flexDirection:"column", gap:8 }}>
             {isLastDay ? (
-              isDone
-                ? <button onClick={() => { dispatch({ type:"COMPLETE_WEEK", split:activeSplit }); navigate({ screen:"analytics" }); }}
-                    style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--accent)", color:"#fff", border:"none", borderRadius:0, cursor:"pointer" }}>✓ Complete Week →</button>
-                : <button onClick={() => { dispatch({ type:"COMPLETE_DAY", split:activeSplit, day:dayId }); }}
-                    style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", borderRadius:0, cursor:"pointer" }}>✓ Complete Day {dayId}</button>
+              <button onClick={() => { dispatch({ type:"COMPLETE_WEEK", split:activeSplit }); navigate({ screen:"analytics" }); }}
+                style={{ ...btnBase, fontSize:12, background:"var(--accent)", color:"#fff", border:"none" }}>
+                ✓ Complete Week — Save to Analytics
+              </button>
             ) : (
               isDone
-                ? <div style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--accent)", color:"#fff", textAlign:"center" }}>Day {dayId} Done</div>
+                ? <div style={{ ...btnBase, fontSize:11, background:"var(--accent)", color:"#fff", textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center" }}>Day {dayId} Done</div>
                 : <button onClick={() => { dispatch({ type:"COMPLETE_DAY", split:activeSplit, day:dayId }); navigate({ screen:"day", dayId:dayId+1 }); }}
-                    style={{ flex:1, fontFamily:"var(--font-mono)", fontSize:11.5, letterSpacing:0.16, textTransform:"uppercase", padding:"16px", background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)", borderRadius:0, cursor:"pointer" }}>✓ Complete Day {dayId}</button>
+                    style={{ ...btnBase, fontSize:11.5, background:"var(--ink)", color:"var(--paper)", border:"1px solid var(--ink)" }}>✓ Complete Day {dayId}</button>
             )}
             <button onClick={() => dispatch({ type:"RESET_DAY", split:activeSplit, day:dayId })}
-              style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.12, textTransform:"uppercase", padding:"16px 14px", background:"transparent", color:"var(--ink)", border:"1px solid var(--rule)", borderRadius:0, cursor:"pointer" }}>Reset</button>
+              style={{ fontFamily:"var(--font-mono)", fontSize:11, letterSpacing:0.12, textTransform:"uppercase", padding:"12px 14px", background:"transparent", color:"var(--ink-60)", border:"1px solid var(--rule)", borderRadius:0, cursor:"pointer" }}>Reset Day</button>
           </div>
         );
       })()}
