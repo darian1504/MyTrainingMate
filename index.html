@@ -1396,12 +1396,13 @@ function AuthScreen({ state, dispatch, navigate }) {
     if (step==='plan' && !termsOk) { setError('Accept the terms to continue'); return; }
     setError('');
     if (signupStep < STEPS.length-1) { setSignupStep(s=>s+1); return; }
-    // Save user so they're logged in when Stripe redirects back
+    // Activate Pro optimistically then open Stripe in new tab
     const userObj = { email:form.email, name:form.name, goal:form.goal, experience:form.experience, daysPerWeek:form.daysPerWeek };
     dispatch({ type:'SET_USER', user:userObj });
-    const returnUrl = encodeURIComponent(window.location.href.split('?')[0] + '?pro=1');
-    const base = form.selectedPlan==='monthly' ? STRIPE_MONTHLY : STRIPE_YEARLY;
-    window.location.href = `${base}?prefilled_email=${encodeURIComponent(form.email)}&client_reference_id=${encodeURIComponent(form.email)}&success_url=${returnUrl}`;
+    dispatch({ type:'UPGRADE_PRO' });
+    navigate({ screen:'home' });
+    const stripeUrl = form.selectedPlan==='monthly' ? STRIPE_MONTHLY : STRIPE_YEARLY;
+    window.open(stripeUrl, '_blank');
   };
   const skipPlan = () => {
     dispatch({ type:'SET_USER', user:{ email:form.email, name:form.name, goal:form.goal, experience:form.experience, daysPerWeek:form.daysPerWeek } });
@@ -1822,14 +1823,6 @@ function App() {
   const [state, dispatch] = useReducer(reducer, null, loadState);
   useEffectApp(() => { localStorage.setItem("tl-state", JSON.stringify(state)); }, [state]);
 
-  // Detect ?pro=1 in URL after Stripe redirect back
-  useEffectApp(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('pro') === '1') {
-      dispatch({ type:'UPGRADE_PRO' });
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
 
   const [route, setRoute] = useStateApp(() => {
     try { const s=localStorage.getItem("tl-route"); if(s) return JSON.parse(s); } catch {}
