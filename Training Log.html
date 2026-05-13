@@ -361,7 +361,7 @@ function DayCard({ day, plan, dayColor, completed, total, isCurrent, isDone, onC
   const subtitle = (plan.main && plan.main.length > 0) ? plan.main.map(id=>exerciseById(id).name).join(" · ") : (plan.sub || "");
   const bg = isCurrent ? "var(--ink)" : isDone ? "oklch(0.72 0.16 55)" : "transparent";
   const fg = (isCurrent || isDone) ? (isDone ? "oklch(0.18 0.04 55)" : "var(--paper)") : "var(--ink)";
-  const fgMuted = isCurrent ? "rgba(255,255,255,0.6)" : isDone ? "oklch(0.32 0.06 55)" : "var(--ink-60)";
+  const fgMuted = isCurrent ? "var(--current-muted)" : isDone ? "oklch(0.32 0.06 55)" : "var(--ink-60)";
   const borderCol = isCurrent ? "var(--ink)" : isDone ? "oklch(0.62 0.18 55)" : "var(--rule)";
   return (
     <button onClick={onClick} style={{
@@ -379,13 +379,13 @@ function DayCard({ day, plan, dayColor, completed, total, isCurrent, isDone, onC
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:5 }}>
           {isDone && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.18, textTransform:"uppercase", color: fgMuted, border:`1px solid ${fgMuted}`, borderRadius:2, padding:"2px 5px" }}>Done</span>}
-          {!isDone && isCurrent && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.18, textTransform:"uppercase", color:"var(--paper)", border:"1px solid rgba(255,255,255,0.4)", borderRadius:2, padding:"2px 5px" }}>Today</span>}
+          {!isDone && isCurrent && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.18, textTransform:"uppercase", color:"var(--paper)", border:"1px solid var(--current-muted)", borderRadius:2, padding:"2px 5px" }}>Today</span>}
           {onRemove && <span onClick={e=>{e.stopPropagation();onRemove();}} style={{ width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"var(--font-mono)",fontSize:13,color:fgMuted,background:"rgba(128,128,128,0.2)",borderRadius:2,cursor:"pointer",flexShrink:0 }}>×</span>}
         </div>
       </div>
       <div style={{ fontFamily:"var(--font-display)", fontSize:15, letterSpacing:-0.1, lineHeight:1.15, marginTop:6 }}>{plan.title}</div>
       <div style={{ fontFamily:"var(--font-mono)", fontSize:10, letterSpacing:0.08, textTransform:"uppercase", color: fgMuted, marginTop:2 }}>{subtitle}</div>
-      <div style={{ height:2, background: isDone ? "rgba(0,0,0,0.15)" : isCurrent ? "rgba(255,255,255,0.18)" : "var(--rule)", marginTop:10, position:"relative" }}>
+      <div style={{ height:2, background: isDone ? "rgba(0,0,0,0.15)" : isCurrent ? "var(--current-track)" : "var(--rule)", marginTop:10, position:"relative" }}>
         <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${pct*100}%`, background: isDone ? "oklch(0.18 0.04 55)" : isCurrent ? "var(--paper)" : "var(--accent)", transition:"width 400ms ease" }}/>
       </div>
       <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.08, textTransform:"uppercase", color: fgMuted, marginTop:2 }}>{completed}/{total} · {Math.round(pct*100)}%</div>
@@ -1894,6 +1894,8 @@ function App() {
     "--rule":v.rule,"--accent":ACCENT_CHOICES[tweaks.accent]||ACCENT_CHOICES.vermilion,
     "--accent-tint":v.accentTint,"--success":"oklch(0.52 0.12 150)",
     "--font-display":p.display,"--font-body":p.body,"--font-mono":p.mono,
+    "--current-muted": variant==="ink" ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)",
+    "--current-track":  variant==="ink" ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.18)",
   };
 
   const [showPaywall, setShowPaywall] = useStateApp(false);
