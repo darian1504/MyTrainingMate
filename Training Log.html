@@ -1384,8 +1384,8 @@ function AuthScreen({ state, dispatch, navigate }) {
     dispatch({ type:'SET_USER', user:{ email:form.email, name:form.email.split('@')[0] } });
     navigate({ screen:'home' });
   };
-  const STRIPE_YEARLY  = 'https://buy.stripe.com/REPLACE_YEARLY_LINK';
-  const STRIPE_MONTHLY = 'https://buy.stripe.com/REPLACE_MONTHLY_LINK';
+  const STRIPE_YEARLY  = 'https://buy.stripe.com/test_8x2aEXcmr64acBa1XU5Vu00';
+  const STRIPE_MONTHLY = 'https://buy.stripe.com/test_bJe00jcmr0JQcBa0TQ5Vu01';
 
   const doNext = () => {
     const step = STEPS[signupStep];
