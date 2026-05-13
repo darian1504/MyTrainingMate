@@ -248,16 +248,24 @@ const REPS_GUIDE = { legs:"6-10", back:"8-12", chest:"8-12", arms:"10-15", shoul
 const SETS_MAIN = 4, SETS_ACC = 3;
 const { useState: useStateComp } = React;
 
-function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDone=0, setsTarget=3, onSetAdd, onRemove, detailedMode=false, detailedEntries=[], onAddSetEntry }) {
+function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDone=0, setsTarget=3, onSetAdd, onRemove, detailedMode=false, detailedEntries=[], onAddSetEntry, onEditSetEntry, onDeleteSetEntry }) {
   const [repInput, setRepInput] = useStateComp("");
   const [kgInput, setKgInput] = useStateComp("");
+  const [editingIndex, setEditingIndex] = useStateComp(null);
   const reps = REPS_GUIDE[ex.group] || "8-12";
+  const startEdit = (i, e) => { setEditingIndex(i); setRepInput(String(e.reps)); setKgInput(String(e.kg)); };
+  const cancelEdit = () => { setEditingIndex(null); setRepInput(""); setKgInput(""); };
   const handleOk = () => {
-    const r = parseInt(repInput || reps.split('-')[0]);
+    const r = parseInt(editingIndex !== null ? repInput : (repInput || reps.split('-')[0]));
     const k = parseFloat(kgInput.replace(',', '.'));
     if (!r || isNaN(r) || isNaN(k) || k <= 0) return;
-    onAddSetEntry && onAddSetEntry({ reps:r, kg:k });
-    setKgInput("");
+    if (editingIndex !== null) {
+      onEditSetEntry && onEditSetEntry(editingIndex, { reps:r, kg:k });
+      cancelEdit();
+    } else {
+      onAddSetEntry && onAddSetEntry({ reps:r, kg:k });
+      setKgInput("");
+    }
     if (checked) onToggle && onToggle();
   };
   return (
@@ -289,23 +297,28 @@ function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDo
       </div>
       {detailedMode && onAddSetEntry && (
         <div style={{ marginTop:10, paddingLeft:34 }}>
-          {detailedEntries.map((e, i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="6" fill={checked ? "var(--ink-30)" : "var(--success)"} opacity="0.18"/>
-                <path d="M4 7.5l2 2 4-4" stroke={checked ? "var(--ink-30)" : "var(--success)"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span style={{ fontFamily:"var(--font-mono)", fontSize:11, color: checked ? "var(--ink-60)" : "var(--success)", fontVariantNumeric:"tabular-nums" }}>Set {i+1} · {e.reps} reps × {e.kg} kg</span>
-            </div>
-          ))}
+          {detailedEntries.map((e, i) => {
+            const isEditing = editingIndex === i;
+            return (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="7" cy="7" r="6" fill={isEditing ? "var(--accent)" : checked ? "var(--ink-30)" : "var(--success)"} opacity="0.18"/>
+                  <path d="M4 7.5l2 2 4-4" stroke={isEditing ? "var(--accent)" : checked ? "var(--ink-30)" : "var(--success)"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span onClick={() => !checked && startEdit(i, e)} style={{ fontFamily:"var(--font-mono)", fontSize:11, color: isEditing ? "var(--accent)" : checked ? "var(--ink-60)" : "var(--success)", fontVariantNumeric:"tabular-nums", flex:1, cursor: checked ? "default" : "pointer" }}>Set {i+1} · {e.reps} reps × {e.kg} kg</span>
+                {!checked && <button onClick={() => { onDeleteSetEntry && onDeleteSetEntry(i); if(isEditing) cancelEdit(); }} style={{ background:"transparent", border:"none", color:"var(--ink-30)", cursor:"pointer", fontFamily:"var(--font-mono)", fontSize:13, padding:"0 2px", lineHeight:1, flexShrink:0 }}>×</button>}
+              </div>
+            );
+          })}
           <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:4, opacity: checked ? 0.35 : 1, pointerEvents: checked ? "none" : "auto", transition:"opacity 200ms" }}>
             <input type="number" inputMode="numeric" placeholder={reps.split('-')[0]} value={repInput} onChange={e=>setRepInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleOk()} disabled={checked}
-              style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:"1px solid var(--ink-30)", background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
+              style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:`1px solid ${editingIndex!==null?"var(--accent)":"var(--ink-30)"}`, background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
             <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--ink-60)" }}>reps ×</span>
             <input type="text" inputMode="decimal" placeholder="kg" value={kgInput} onChange={e=>{ const v=e.target.value; if(v===''||/^[\d]*[.,]?[\d]*$/.test(v)) setKgInput(v); }} onKeyDown={e=>e.key==="Enter"&&handleOk()} disabled={checked}
-              style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:"1px solid var(--ink-30)", background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
-            <button onClick={handleOk} disabled={checked} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.12, textTransform:"uppercase", padding:"6px 12px", background:"var(--ink)", color:"var(--paper)", border:"none", cursor: checked ? "default" : "pointer", flexShrink:0 }}>OK</button>
-            {detailedEntries.length > 0 && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", letterSpacing:0.08 }}>{detailedEntries.length} sets</span>}
+              style={{ width:52, fontFamily:"var(--font-mono)", fontSize:13, padding:"6px 8px", border:`1px solid ${editingIndex!==null?"var(--accent)":"var(--ink-30)"}`, background:"transparent", color:"var(--ink)", outline:"none", textAlign:"center", boxSizing:"border-box" }}/>
+            <button onClick={handleOk} disabled={checked} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.12, textTransform:"uppercase", padding:"6px 12px", background: editingIndex!==null ? "var(--accent)" : "var(--ink)", color:"var(--paper)", border:"none", cursor: checked ? "default" : "pointer", flexShrink:0 }}>{editingIndex!==null ? "Save" : "OK"}</button>
+            {editingIndex!==null && <button onClick={cancelEdit} style={{ fontFamily:"var(--font-mono)", fontSize:11, padding:"6px 8px", background:"transparent", color:"var(--ink-60)", border:"1px solid var(--rule)", cursor:"pointer", flexShrink:0 }}>✕</button>}
+            {editingIndex===null && detailedEntries.length > 0 && <span style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", letterSpacing:0.08 }}>{detailedEntries.length} sets</span>}
           </div>
         </div>
       )}
@@ -732,7 +745,9 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
   const getSets = (slot, tgt) => ({ done: splitSets[`${dayId}_${slot}`]||0, target:tgt });
   const splitDetailedSets = (stateDetailedSets||{})[activeSplit] || {};
   const getDetailedEntries = slot => splitDetailedSets[`${dayId}_${slot}`] || [];
-  const mkAddSetEntry = slot => e => dispatch({ type:"ADD_SET_ENTRY", split:activeSplit, day:dayId, slot, reps:e.reps, kg:e.kg });
+  const mkAddSetEntry    = slot => e => dispatch({ type:"ADD_SET_ENTRY",    split:activeSplit, day:dayId, slot, reps:e.reps, kg:e.kg });
+  const mkEditSetEntry   = slot => (index, e) => dispatch({ type:"EDIT_SET_ENTRY",   split:activeSplit, day:dayId, slot, index, reps:e.reps, kg:e.kg });
+  const mkDeleteSetEntry = slot => index => dispatch({ type:"DELETE_SET_ENTRY", split:activeSplit, day:dayId, slot, index });
 
   return (
     <div style={{ padding:"8px 24px 120px", fontFamily:"var(--font-body)", color:"var(--ink)" }}>
@@ -772,7 +787,7 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
         return <ExerciseRow key={`m-${i}`} ex={ex} isMain checked={plannedDone.has(i)}
           onToggle={() => dispatch({ type:plannedDone.has(i)?"UNCHECK":"CHECK", split:activeSplit, day:dayId, slot:i, id })}
           setsDone={s.done} setsTarget={s.target}
-          detailedMode={detailedMode} detailedEntries={getDetailedEntries(i)} onAddSetEntry={mkAddSetEntry(i)}
+          detailedMode={detailedMode} detailedEntries={getDetailedEntries(i)} onAddSetEntry={mkAddSetEntry(i)} onEditSetEntry={mkEditSetEntry(i)} onDeleteSetEntry={mkDeleteSetEntry(i)}
           onRemove={() => dispatch({ type:"HIDE_SLOT", split:activeSplit, day:dayId, slot:i })}/>;
       })}
 
@@ -786,7 +801,7 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
         return <ExerciseRow key={`o-${i}`} ex={ex} checked={plannedDone.has(slot)}
           onToggle={() => dispatch({ type:plannedDone.has(slot)?"UNCHECK":"CHECK", split:activeSplit, day:dayId, slot, id })}
           setsDone={s.done} setsTarget={s.target}
-          detailedMode={detailedMode} detailedEntries={getDetailedEntries(slot)} onAddSetEntry={mkAddSetEntry(slot)}
+          detailedMode={detailedMode} detailedEntries={getDetailedEntries(slot)} onAddSetEntry={mkAddSetEntry(slot)} onEditSetEntry={mkEditSetEntry(slot)} onDeleteSetEntry={mkDeleteSetEntry(slot)}
           onRemove={() => dispatch({ type:"HIDE_SLOT", split:activeSplit, day:dayId, slot })}/>;
       })}
       {extras.map(e => {
@@ -794,7 +809,7 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
         return <ExerciseRow key={`e-${e.slot}`} ex={exerciseById(e.id)} checked={e.checked} dashed
           onToggle={() => dispatch({ type:e.checked?"UNCHECK":"CHECK", split:activeSplit, day:dayId, slot:e.slot, id:e.id })}
           setsDone={s.done} setsTarget={s.target}
-          detailedMode={detailedMode} detailedEntries={getDetailedEntries(e.slot)} onAddSetEntry={mkAddSetEntry(e.slot)}
+          detailedMode={detailedMode} detailedEntries={getDetailedEntries(e.slot)} onAddSetEntry={mkAddSetEntry(e.slot)} onEditSetEntry={mkEditSetEntry(e.slot)} onDeleteSetEntry={mkDeleteSetEntry(e.slot)}
           onRemove={() => dispatch({ type:"REMOVE_EXTRA", split:activeSplit, day:dayId, slot:e.slot })}/>;
       })}
       {(mainIds.length > 0 || otherIds.length > 0 || extras.length > 0) && <div style={{ borderTop:"1px solid var(--ink)" }}/>}
@@ -1621,6 +1636,21 @@ function reducer(state, action) {
       const splitDs = ds[split] || {};
       const key = `${action.day}_${action.slot}`;
       return { ...state, detailedSets: { ...ds, [split]: { ...splitDs, [key]: [...(splitDs[key]||[]), { reps:action.reps, kg:action.kg }] } } };
+    }
+    case "EDIT_SET_ENTRY": {
+      const ds = state.detailedSets || {};
+      const splitDs = ds[split] || {};
+      const key = `${action.day}_${action.slot}`;
+      const entries = [...(splitDs[key]||[])];
+      entries[action.index] = { reps:action.reps, kg:action.kg };
+      return { ...state, detailedSets: { ...ds, [split]: { ...splitDs, [key]: entries } } };
+    }
+    case "DELETE_SET_ENTRY": {
+      const ds = state.detailedSets || {};
+      const splitDs = ds[split] || {};
+      const key = `${action.day}_${action.slot}`;
+      const entries = (splitDs[key]||[]).filter((_,i) => i !== action.index);
+      return { ...state, detailedSets: { ...ds, [split]: { ...splitDs, [key]: entries } } };
     }
 
     case "CHECK":
