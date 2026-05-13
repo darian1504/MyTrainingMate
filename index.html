@@ -1237,7 +1237,7 @@ function AnalyticsScreen({ state, navigate, setShowPaywall }) {
 }
 
 function ProfileScreen({ state, dispatch, navigate }) {
-  const { measurements={}, detailedMode, user, isPro } = state;
+  const { measurements={}, detailedMode, user, isPro, planType='free' } = state;
   const MEASURES = [
     { key:"weight_kg", label:"Weight", unit:"kg" },
     { key:"height_cm", label:"Height", unit:"cm" },
@@ -1264,15 +1264,66 @@ function ProfileScreen({ state, dispatch, navigate }) {
         <div style={{ fontFamily:"var(--font-display)", fontSize:42, lineHeight:0.95, letterSpacing:-0.035, marginTop:10 }}><span style={{ fontStyle:"italic" }}>Profile</span></div>
       </div>
       {user ? (
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:20, padding:"14px 16px", border:"1px solid var(--rule)" }}>
-          <div>
-            <div style={{ fontFamily:"var(--font-display)", fontSize:18, letterSpacing:-0.1 }}>{user.name}</div>
-            <div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", marginTop:3, letterSpacing:0.1, textTransform:"uppercase" }}>
-              {user.email} · {isPro ? "Pro" : "Free"}
+        <>
+          {/* User card */}
+          <div style={{ marginTop:20, padding:"16px", border:"1px solid var(--rule)" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+              <div>
+                <div style={{ fontFamily:"var(--font-display)", fontSize:22, letterSpacing:-0.1 }}>{user.name}</div>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", marginTop:3, letterSpacing:0.1, textTransform:"uppercase" }}>{user.email}</div>
+                {(user.goal || user.experience) && (
+                  <div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", marginTop:2, letterSpacing:0.1, textTransform:"uppercase" }}>
+                    {[user.goal, user.experience, user.daysPerWeek ? user.daysPerWeek+" days/wk" : null].filter(Boolean).join(" · ")}
+                  </div>
+                )}
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:8 }}>
+                <span style={{ fontFamily:"var(--font-mono)", fontSize:8.5, letterSpacing:0.14, textTransform:"uppercase", padding:"3px 9px", background: isPro ? "var(--accent)" : "var(--rule)", color: isPro ? "#fff" : "var(--ink-60)" }}>{isPro ? "Pro · "+planType.charAt(0).toUpperCase()+planType.slice(1) : "Free"}</span>
+                <button onClick={()=>dispatch({type:"SIGN_OUT"})} style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.12, textTransform:"uppercase", padding:"6px 10px", background:"transparent", color:"var(--ink-60)", border:"1px solid var(--rule)", cursor:"pointer" }}>Sign Out</button>
+              </div>
             </div>
           </div>
-          <button onClick={()=>dispatch({type:"SIGN_OUT"})} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.12, textTransform:"uppercase", padding:"7px 12px", background:"transparent", color:"var(--ink)", border:"1px solid var(--rule)", cursor:"pointer" }}>Sign Out</button>
-        </div>
+
+          {/* Subscription */}
+          <Rule label="Subscription"/>
+          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:8 }}>
+            {/* Free */}
+            <button onClick={()=>dispatch({type:"SET_PLAN", planType:"free"})}
+              style={{ border: planType==="free" ? "2px solid var(--ink)" : "1px solid var(--rule)", padding:"14px 16px", background: planType==="free" ? "var(--ink)" : "transparent", color: planType==="free" ? "var(--paper)" : "var(--ink)", cursor:"pointer", textAlign:"left", transition:"all 160ms" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div style={{ fontFamily:"var(--font-display)", fontSize:17, letterSpacing:-0.1 }}>Free</div>
+                {planType==="free" && <span style={{ fontFamily:"var(--font-mono)", fontSize:8.5, letterSpacing:0.12, textTransform:"uppercase", opacity:0.65 }}>Current</span>}
+              </div>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:9, opacity:0.6, marginTop:3, letterSpacing:0.08 }}>Basic tracking · No analytics</div>
+            </button>
+            {/* Monthly */}
+            <button onClick={()=>{ dispatch({type:"SET_PLAN", planType:"monthly"}); window.open(STRIPE_MONTHLY,"_blank"); }}
+              style={{ border: planType==="monthly" ? "2px solid var(--ink)" : "1px solid var(--rule)", padding:"14px 16px", background: planType==="monthly" ? "var(--ink)" : "transparent", color: planType==="monthly" ? "var(--paper)" : "var(--ink)", cursor:"pointer", textAlign:"left", transition:"all 160ms" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
+                <div style={{ fontFamily:"var(--font-display)", fontSize:17, letterSpacing:-0.1 }}>Monthly</div>
+                <div><span style={{ fontFamily:"var(--font-display)", fontSize:18, letterSpacing:-0.05 }}>$0.99</span><span style={{ fontFamily:"var(--font-mono)", fontSize:9, opacity:0.6, marginLeft:4 }}>AUD / mo</span></div>
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:3 }}>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, opacity:0.6, letterSpacing:0.08 }}>All Pro features · Cancel anytime</div>
+                {planType==="monthly" && <span style={{ fontFamily:"var(--font-mono)", fontSize:8.5, letterSpacing:0.12, textTransform:"uppercase", opacity:0.65 }}>Current</span>}
+              </div>
+            </button>
+            {/* Yearly */}
+            <button onClick={()=>{ dispatch({type:"SET_PLAN", planType:"yearly"}); window.open(STRIPE_YEARLY,"_blank"); }}
+              style={{ position:"relative", border: planType==="yearly" ? "2px solid var(--ink)" : "1px solid var(--rule)", padding:"16px 16px 14px", background: planType==="yearly" ? "var(--ink)" : "transparent", color: planType==="yearly" ? "var(--paper)" : "var(--ink)", cursor:"pointer", textAlign:"left", transition:"all 160ms" }}>
+              <div style={{ position:"absolute", top:-9, left:12, background:"var(--accent)", color:"#fff", fontFamily:"var(--font-mono)", fontSize:7.5, letterSpacing:0.14, textTransform:"uppercase", padding:"2px 7px" }}>Best Value</div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
+                <div style={{ fontFamily:"var(--font-display)", fontSize:17, letterSpacing:-0.1 }}>Yearly</div>
+                <div><span style={{ fontFamily:"var(--font-display)", fontSize:18, letterSpacing:-0.05 }}>$9.99</span><span style={{ fontFamily:"var(--font-mono)", fontSize:9, opacity:0.6, marginLeft:4 }}>AUD / yr</span></div>
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:3 }}>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:9, opacity:0.6, letterSpacing:0.08 }}>≈ $0.83/month · Save 17%</div>
+                {planType==="yearly" && <span style={{ fontFamily:"var(--font-mono)", fontSize:8.5, letterSpacing:0.12, textTransform:"uppercase", opacity:0.65 }}>Current</span>}
+              </div>
+            </button>
+          </div>
+          {isPro && <div style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--ink-60)", letterSpacing:0.08 }}>To cancel your subscription, manage it directly in Stripe.</div>}
+        </>
       ) : (
         <div style={{ marginTop:20, padding:"18px 16px", border:"1px dashed var(--rule)", textAlign:"center" }}>
           <div style={{ fontFamily:"var(--font-display)", fontSize:16, letterSpacing:-0.1, marginBottom:10 }}>Sign in to sync your data</div>
@@ -1341,10 +1392,6 @@ function AuthScreen({ state, dispatch, navigate }) {
     dispatch({ type:'SET_USER', user:{ email:form.email, name:form.email.split('@')[0] } });
     navigate({ screen:'home' });
   };
-  const STRIPE_PK      = 'pk_live_51TJObr2c5hGzCMPfJS6oeIZuPB5hLuBmawy5pvePFNL5o2eZYurvW40qt2kl7VRJ5piLbqEYHhu7qEuOi9j6anIr00BZbE1yKJ';
-  const STRIPE_YEARLY  = 'https://buy.stripe.com/bJebIU03X5ZHchObO0bfO01';
-  const STRIPE_MONTHLY = 'https://buy.stripe.com/5kQ8wI03X87P3Li3hubfO00';
-
   const doNext = () => {
     const step = STEPS[signupStep];
     if (step==='account' && (!form.email || !form.password)) { setError('Fill in email and password'); return; }
@@ -1354,13 +1401,12 @@ function AuthScreen({ state, dispatch, navigate }) {
     if (step==='plan' && !termsOk) { setError('Accept the terms to continue'); return; }
     setError('');
     if (signupStep < STEPS.length-1) { setSignupStep(s=>s+1); return; }
-    // Activate Pro optimistically then open Stripe in new tab
+    const planType = form.selectedPlan==='monthly' ? 'monthly' : 'yearly';
     const userObj = { email:form.email, name:form.name, goal:form.goal, experience:form.experience, daysPerWeek:form.daysPerWeek };
     dispatch({ type:'SET_USER', user:userObj });
-    dispatch({ type:'UPGRADE_PRO' });
+    dispatch({ type:'SET_PLAN', planType });
     navigate({ screen:'home' });
-    const stripeUrl = form.selectedPlan==='monthly' ? STRIPE_MONTHLY : STRIPE_YEARLY;
-    window.open(stripeUrl, '_blank');
+    window.open(planType==='monthly' ? STRIPE_MONTHLY : STRIPE_YEARLY, '_blank');
   };
   const skipPlan = () => {
     dispatch({ type:'SET_USER', user:{ email:form.email, name:form.name, goal:form.goal, experience:form.experience, daysPerWeek:form.daysPerWeek } });
@@ -1549,6 +1595,10 @@ function AuthScreen({ state, dispatch, navigate }) {
   );
 }
 
+const STRIPE_PK      = 'pk_live_51TJObr2c5hGzCMPfJS6oeIZuPB5hLuBmawy5pvePFNL5o2eZYurvW40qt2kl7VRJ5piLbqEYHhu7qEuOi9j6anIr00BZbE1yKJ';
+const STRIPE_YEARLY  = 'https://buy.stripe.com/bJebIU03X5ZHchObO0bfO01';
+const STRIPE_MONTHLY = 'https://buy.stripe.com/5kQ8wI03X87P3Li3hubfO00';
+
 Object.assign(window, { WorkoutCalendar, BodyMap, Dashboard, DayScreen, AnalyticsScreen, ProfileScreen, AuthScreen, PaywallModal, computeProgress });
 </script>
 
@@ -1580,6 +1630,7 @@ const INITIAL_STATE = {
   detailedMode:  false,
   theme:         'paper',
   isPro:         false,
+  planType:      'free',
   user:          null,
   weekHistory:   [],
   bodyLog:       [],
@@ -1606,6 +1657,7 @@ function loadState() {
       detailedMode:  parsed.detailedMode  || false,
       theme:         parsed.theme         || 'paper',
       isPro:         parsed.isPro         || false,
+      planType:      parsed.planType      || (parsed.isPro ? 'yearly' : 'free'),
       weekHistory:   parsed.weekHistory   || [],
       bodyLog:       parsed.bodyLog       || [],
       user:          parsed.user           || null,
@@ -1712,7 +1764,9 @@ function reducer(state, action) {
     }
 
     case "UPGRADE_PRO":
-      return { ...state, isPro: true };
+      return { ...state, isPro: true, planType: state.planType==='free' ? 'yearly' : state.planType };
+    case "SET_PLAN":
+      return { ...state, isPro: action.planType !== 'free', planType: action.planType };
 
     case "SET_USER":
       return { ...state, user: action.user };
