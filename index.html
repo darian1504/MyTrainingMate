@@ -253,7 +253,7 @@ function ExerciseRow({ ex, checked, onToggle, dashed=false, isMain=false, setsDo
   const [kgInput, setKgInput] = useStateComp("");
   const reps = REPS_GUIDE[ex.group] || "8-12";
   const handleOk = () => {
-    const r = parseInt(repInput);
+    const r = parseInt(repInput || reps.split('-')[0]);
     const k = parseFloat(kgInput.replace(',', '.'));
     if (!r || isNaN(r) || isNaN(k) || k <= 0) return;
     onAddSetEntry && onAddSetEntry({ reps:r, kg:k });
