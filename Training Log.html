@@ -1326,8 +1326,9 @@ function AuthScreen({ state, dispatch, navigate }) {
     dispatch({ type:'SET_USER', user:{ email:form.email, name:form.email.split('@')[0] } });
     navigate({ screen:'home' });
   };
-  const STRIPE_YEARLY  = 'https://buy.stripe.com/test_8x2aEXcmr64acBa1XU5Vu00';
-  const STRIPE_MONTHLY = 'https://buy.stripe.com/test_bJe00jcmr0JQcBa0TQ5Vu01';
+  const STRIPE_PK      = 'pk_live_51TJObr2c5hGzCMPfJS6oeIZuPB5hLuBmawy5pvePFNL5o2eZYurvW40qt2kl7VRJ5piLbqEYHhu7qEuOi9j6anIr00BZbE1yKJ';
+  const STRIPE_YEARLY  = 'https://buy.stripe.com/bJebIU03X5ZHchObO0bfO01';
+  const STRIPE_MONTHLY = 'https://buy.stripe.com/5kQ8wI03X87P3Li3hubfO00';
 
   const doNext = () => {
     const step = STEPS[signupStep];
