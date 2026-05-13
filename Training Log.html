@@ -1384,6 +1384,9 @@ function AuthScreen({ state, dispatch, navigate }) {
     dispatch({ type:'SET_USER', user:{ email:form.email, name:form.email.split('@')[0] } });
     navigate({ screen:'home' });
   };
+  const STRIPE_YEARLY  = 'https://buy.stripe.com/REPLACE_YEARLY_LINK';
+  const STRIPE_MONTHLY = 'https://buy.stripe.com/REPLACE_MONTHLY_LINK';
+
   const doNext = () => {
     const step = STEPS[signupStep];
     if (step==='account' && (!form.email || !form.password)) { setError('Fill in email and password'); return; }
@@ -1393,6 +1396,14 @@ function AuthScreen({ state, dispatch, navigate }) {
     if (step==='plan' && !termsOk) { setError('Accept the terms to continue'); return; }
     setError('');
     if (signupStep < STEPS.length-1) { setSignupStep(s=>s+1); return; }
+    // Save user so they're logged in when Stripe redirects back
+    const userObj = { email:form.email, name:form.name, goal:form.goal, experience:form.experience, daysPerWeek:form.daysPerWeek };
+    dispatch({ type:'SET_USER', user:userObj });
+    const returnUrl = encodeURIComponent(window.location.href.split('?')[0] + '?pro=1');
+    const base = form.selectedPlan==='monthly' ? STRIPE_MONTHLY : STRIPE_YEARLY;
+    window.location.href = `${base}?prefilled_email=${encodeURIComponent(form.email)}&client_reference_id=${encodeURIComponent(form.email)}&success_url=${returnUrl}`;
+  };
+  const skipPlan = () => {
     dispatch({ type:'SET_USER', user:{ email:form.email, name:form.name, goal:form.goal, experience:form.experience, daysPerWeek:form.daysPerWeek } });
     navigate({ screen:'home' });
   };
@@ -1532,21 +1543,23 @@ function AuthScreen({ state, dispatch, navigate }) {
           ))}
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:20 }}>
-          <div style={{ border:'2px solid var(--ink)', padding:'16px 18px', position:'relative' }}>
-            <div style={{ position:'absolute', top:-10, left:14, background:'var(--ink)', color:'var(--paper)', fontFamily:'var(--font-mono)', fontSize:8, letterSpacing:0.14, textTransform:'uppercase', padding:'2px 8px' }}>Best Value</div>
+          {/* Yearly plan */}
+          <button onClick={()=>set('selectedPlan','yearly')} style={{ border: form.selectedPlan!=='monthly' ? '2px solid var(--ink)' : '1px solid var(--rule)', padding:'16px 18px', position:'relative', background: form.selectedPlan!=='monthly' ? 'var(--ink)' : 'transparent', color: form.selectedPlan!=='monthly' ? 'var(--paper)' : 'var(--ink)', cursor:'pointer', textAlign:'left', transition:'all 160ms' }}>
+            <div style={{ position:'absolute', top:-10, left:14, background:'var(--accent)', color:'#fff', fontFamily:'var(--font-mono)', fontSize:8, letterSpacing:0.14, textTransform:'uppercase', padding:'2px 8px' }}>Best Value</div>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
               <div style={{ fontFamily:'var(--font-display)', fontSize:18, letterSpacing:-0.1 }}>Yearly</div>
-              <div><span style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:-0.05 }}>$9.99</span><span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--ink-60)', marginLeft:4 }}>AUD / year</span></div>
+              <div><span style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:-0.05 }}>$9.99</span><span style={{ fontFamily:'var(--font-mono)', fontSize:9, opacity:0.6, marginLeft:4 }}>AUD / year</span></div>
             </div>
-            <div style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--ink-60)', marginTop:4, letterSpacing:0.08 }}>≈ $0.83/month · Save 17%</div>
-          </div>
-          <div style={{ border:'1px solid var(--rule)', padding:'16px 18px' }}>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:9, opacity:0.6, marginTop:4, letterSpacing:0.08 }}>≈ $0.83/month · Save 17%</div>
+          </button>
+          {/* Monthly plan */}
+          <button onClick={()=>set('selectedPlan','monthly')} style={{ border: form.selectedPlan==='monthly' ? '2px solid var(--ink)' : '1px solid var(--rule)', padding:'16px 18px', background: form.selectedPlan==='monthly' ? 'var(--ink)' : 'transparent', color: form.selectedPlan==='monthly' ? 'var(--paper)' : 'var(--ink)', cursor:'pointer', textAlign:'left', transition:'all 160ms' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
               <div style={{ fontFamily:'var(--font-display)', fontSize:18, letterSpacing:-0.1 }}>Monthly</div>
-              <div><span style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:-0.05 }}>$0.99</span><span style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--ink-60)', marginLeft:4 }}>AUD / month</span></div>
+              <div><span style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:-0.05 }}>$0.99</span><span style={{ fontFamily:'var(--font-mono)', fontSize:9, opacity:0.6, marginLeft:4 }}>AUD / month</span></div>
             </div>
-            <div style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--ink-60)', marginTop:4, letterSpacing:0.08 }}>Billed monthly · Cancel anytime</div>
-          </div>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:9, opacity:0.6, marginTop:4, letterSpacing:0.08 }}>Billed monthly · Cancel anytime</div>
+          </button>
         </div>
         <button onClick={()=>setTermsOk(t=>!t)} style={{ display:'flex', alignItems:'center', gap:10, background:'transparent', border:'none', cursor:'pointer', color:'var(--ink)', padding:'8px 0', width:'100%' }}>
           <div style={{ width:20, height:20, border:`1.5px solid ${termsOk?'var(--ink)':'var(--ink-30)'}`, background:termsOk?'var(--ink)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 180ms' }}>
@@ -1560,8 +1573,13 @@ function AuthScreen({ state, dispatch, navigate }) {
 
       <div style={{ marginTop:32 }}>
         <button onClick={doNext} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:17, background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer' }}>
-          {step==='plan' ? 'Start Training →' : 'Continue →'}
+          {step==='plan' ? `Start Pro — ${form.selectedPlan==='monthly' ? '$0.99/mo' : '$9.99/yr'} →` : 'Continue →'}
         </button>
+        {step==='plan' && (
+          <button onClick={skipPlan} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:0.14, textTransform:'uppercase', padding:14, background:'transparent', color:'var(--ink-60)', border:'none', cursor:'pointer', marginTop:6 }}>
+            Continue Free — Limited features
+          </button>
+        )}
         {step==='account' && (
           <div style={{ textAlign:'center', fontFamily:'var(--font-mono)', fontSize:9.5, color:'var(--ink-60)', marginTop:14 }}>
             Have an account? <span onClick={()=>{setMode('signin');setError('');}} style={{ color:'var(--ink)', textDecoration:'underline', cursor:'pointer' }}>Sign in</span>
@@ -1803,6 +1821,15 @@ function App() {
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
   const [state, dispatch] = useReducer(reducer, null, loadState);
   useEffectApp(() => { localStorage.setItem("tl-state", JSON.stringify(state)); }, [state]);
+
+  // Detect ?pro=1 in URL after Stripe redirect back
+  useEffectApp(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pro') === '1') {
+      dispatch({ type:'UPGRADE_PRO' });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const [route, setRoute] = useStateApp(() => {
     try { const s=localStorage.getItem("tl-route"); if(s) return JSON.parse(s); } catch {}
