@@ -1,0 +1,18 @@
+{
+  "appId": "com.mytrainingmate.app",
+  "appName": "MyTrainingMate",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https",
+    "hostname": "mytrainingmate"
+  },
+  "ios": {
+    "contentInset": "always",
+    "preferredContentMode": "mobile",
+    "backgroundColor": "#1c1a18"
+  },
+  "android": {
+    "backgroundColor": "#1c1a18"
+  }
+}
