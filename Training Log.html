@@ -723,10 +723,27 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
   splitCompletions.forEach(c=>{ const ex=exerciseById(c.id); if(ex.group) weekProg[ex.group]++; });
   const weekTargets = getWeeklyTargets(activeSplit, customPlan?.days||[]);
   const todayGroupsCovered = new Set(allPlanIds.map(id=>exerciseById(id).group));
-  const laggingGroups = MUSCLE_GROUPS.filter(g => {
-    const t=weekTargets[g]||0; if(!t) return false;
-    return (weekProg[g]||0)/t < 0.6 && !todayGroupsCovered.has(g);
-  });
+
+  const laggingGroups = (() => {
+    const lagging = new Set();
+    // Accumulate uncompleted exercises from every previously completed day
+    splitCompletedDays.filter(d => d < dayId).forEach(prevDay => {
+      const prevPlan = isCustom ? (customPlan.days[prevDay-1]||{}) : (SPLITS[activeSplit]?.days[prevDay-1]||{});
+      const prevAllIds = [...(prevPlan.main||[]), ...(prevPlan.other||[])];
+      const prevHidden = ((hiddenSlots||{})[activeSplit]||{})[prevDay] || [];
+      prevAllIds.forEach((exId, slot) => {
+        if (prevHidden.includes(slot)) return;
+        const wasDone = splitCompletions.some(c => c.day===prevDay && c.slot===slot);
+        if (!wasDone) { const ex=exerciseById(exId); if(ex.group && !todayGroupsCovered.has(ex.group)) lagging.add(ex.group); }
+      });
+    });
+    // Also flag groups below 60% of weekly target not covered today
+    MUSCLE_GROUPS.forEach(g => {
+      const t=weekTargets[g]||0; if(!t) return;
+      if ((weekProg[g]||0)/t < 0.6 && !todayGroupsCovered.has(g)) lagging.add(g);
+    });
+    return MUSCLE_GROUPS.filter(g => lagging.has(g));
+  })();
   const laggingRecs = {};
   laggingGroups.forEach(g => {
     laggingRecs[g] = Object.values(EXERCISES).filter(ex=>ex.group===g&&!allPlanIds.includes(ex.id)).slice(0,5);
