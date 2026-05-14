@@ -1,4 +1,4 @@
-const CACHE = 'mytrainingmate-v1';
+const CACHE = 'mytrainingmate-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192px.png', './icon-512px.png', './icon-1024.png'];
 
 self.addEventListener('install', e => {
