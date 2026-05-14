@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Training Log</title>
+<title>MyTrainingMate</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#1c1a18" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Training Log" />
-<link rel="apple-touch-icon" href="icon-192px.png" />
+<meta name="apple-mobile-web-app-title" content="MyTrainingMate" />
+<link rel="apple-touch-icon" href="icon-512px.png" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://buy.stripe.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; connect-src 'self';" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -26,9 +27,9 @@
 <body>
 <div id="root"></div>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 
 <!-- ═══ iOS FRAME ═══ -->
 <script type="text/babel">
@@ -406,105 +407,176 @@ function computeProgress(completions) {
   return p;
 }
 
-// ── Body Map — clean outline / line-drawing style ──
+// ── Body Map — detailed anatomical illustration style ──
 function BodyMap({ intensities={} }) {
-  const opa = g => { const i=intensities[g]||0; return i===0?0:0.28+i*0.62; };
-  const mc  = g => MG_COLORS[g];
-  const mp = (g, mult=1) => ({
-    stroke:"var(--ink)", strokeWidth:0.5, strokeOpacity:0.4,
-    fill: opa(g)>0 ? mc(g) : "none", fillOpacity: opa(g)*mult,
-    strokeLinejoin:"round", strokeLinecap:"round"
-  });
-  const dl = { fill:"none", stroke:"var(--ink)", strokeWidth:0.32, strokeOpacity:0.28, strokeLinecap:"round" };
-  const bs = { fill:"var(--paper)", stroke:"var(--ink)", strokeWidth:0.9, strokeLinejoin:"round", strokeLinecap:"round" };
-  // Silhouette paths (inlined, no inner components)
-  const sil = [
-    <ellipse key="head" {...bs} cx="60" cy="14" rx="11" ry="13"/>,
-    <path key="neck" {...bs} strokeWidth={0.7} d="M55 25 L55 34 L65 34 L65 25"/>,
-    <path key="torso" {...bs} d="M31 40 C26 44 22 54 20 66 L17 80 L17 118 C17 130 21 136 27 140 L38 143 L82 143 L93 140 C99 136 103 130 103 118 L103 80 L100 66 C98 54 94 44 89 40 C83 36 72 34 65 34 L55 34 C48 34 37 36 31 40Z"/>,
-    <path key="la1" {...bs} d="M21 46 C15 52 13 66 13 80 L13 114 L25 116 L29 80 C29 66 27 52 23 46Z"/>,
-    <path key="la2" {...bs} d="M13 116 C12 128 11 142 12 154 L15 168 L25 168 L25 154 C25 142 25 128 25 116Z"/>,
-    <path key="lah" {...bs} strokeWidth={0.6} d="M11 168 C10 173 11 177 14 178 L23 178 L26 173 L26 168Z"/>,
-    <path key="ra1" {...bs} d="M99 46 C105 52 107 66 107 80 L107 114 L95 116 L91 80 C91 66 93 52 97 46Z"/>,
-    <path key="ra2" {...bs} d="M107 116 C108 128 109 142 108 154 L105 168 L95 168 L95 154 C95 142 95 128 95 116Z"/>,
-    <path key="rah" {...bs} strokeWidth={0.6} d="M109 168 C110 173 109 177 106 178 L97 178 L94 173 L94 168Z"/>,
-    <path key="ll1" {...bs} d="M38 143 L56 143 L58 202 L44 210 L24 202Z"/>,
-    <path key="ll2" {...bs} d="M24 202 L44 210 L44 264 L36 270 L22 262Z"/>,
-    <path key="llf" {...bs} strokeWidth={0.6} d="M20 264 L38 264 L40 270 L36 274 L20 270Z"/>,
-    <path key="rl1" {...bs} d="M82 143 L64 143 L62 202 L76 210 L96 202Z"/>,
-    <path key="rl2" {...bs} d="M96 202 L76 210 L76 264 L84 270 L98 262Z"/>,
-    <path key="rlf" {...bs} strokeWidth={0.6} d="M100 264 L82 264 L80 270 L84 274 L100 270Z"/>,
-  ];
+  const opa = g => { const i=intensities[g]||0; return i===0?0:0.22+i*0.68; };
+  const mc = g => MG_COLORS[g];
+  const F = (g, a=1) => ({ fill:opa(g)>0?mc(g):'none', fillOpacity:opa(g)*a, stroke:'var(--ink)', strokeWidth:0.6, strokeLinejoin:'round', strokeLinecap:'round' });
+  const O = { fill:'var(--paper)', stroke:'var(--ink)', strokeWidth:1.0, strokeLinejoin:'round', strokeLinecap:'round' };
+  const D = { fill:'none', stroke:'var(--ink)', strokeWidth:0.38, strokeOpacity:0.4, strokeLinejoin:'round', strokeLinecap:'round' };
+
+  // Full-body silhouette — organic bezier curves, arms slightly away from torso
+  const Silhouette = () => <>
+    {/* Head */}
+    <path {...O} d="M60 3 C70 3 78 10 78 19 C78 28 72 35 66 37 L66 42 L54 42 L54 37 C48 35 42 28 42 19 C42 10 50 3 60 3Z"/>
+    <path {...D} d="M54 28 C55 32 65 32 66 28"/>
+    <path {...D} d="M54 22 C52 22 50 20 51 18"/> <path {...D} d="M66 22 C68 22 70 20 69 18"/>
+    {/* Neck + trapezius slope */}
+    <path {...O} d="M54 42 C50 44 42 48 34 54 C28 58 22 66 20 76 L20 82 C26 76 30 68 34 64 C38 60 44 56 52 53 L52 42Z"/>
+    <path {...O} d="M66 42 C70 44 78 48 86 54 C92 58 98 66 100 76 L100 82 C94 76 90 68 86 64 C82 60 76 56 68 53 L68 42Z"/>
+    {/* Torso */}
+    <path {...O} d="M52 53 C46 56 38 62 34 70 L30 80 L28 100 L28 118 C28 128 30 136 36 142 L44 146 L76 146 L84 142 C90 136 92 128 92 118 L92 100 L90 80 L86 70 C82 62 74 56 68 53 L66 42 L54 42Z"/>
+    {/* Left upper arm */}
+    <path {...O} d="M20 76 C14 82 10 94 9 108 L8 128 C8 138 10 148 13 156 L16 168 C18 174 20 178 22 180 L26 183 C28 183 30 181 30 179 L28 168 L28 152 C28 140 28 128 28 116 L28 100 L28 82 Z"/>
+    {/* Left forearm */}
+    <path {...O} d="M22 180 C20 186 18 196 18 206 L18 222 C18 228 19 232 21 234 L24 236 C26 237 28 235 29 232 L30 218 L30 204 C30 196 30 188 30 182 L26 183Z"/>
+    {/* Left hand */}
+    <path {...O} strokeWidth={0.7} d="M18 222 C17 228 17 234 19 238 L22 240 C24 241 27 239 28 236 L29 232 L24 236Z"/>
+    {/* Right upper arm */}
+    <path {...O} d="M100 76 C106 82 110 94 111 108 L112 128 C112 138 110 148 107 156 L104 168 C102 174 100 178 98 180 L94 183 C92 183 90 181 90 179 L92 168 L92 152 C92 140 92 128 92 116 L92 100 L92 82Z"/>
+    {/* Right forearm */}
+    <path {...O} d="M98 180 C100 186 102 196 102 206 L102 222 C102 228 101 232 99 234 L96 236 C94 237 92 235 91 232 L90 218 L90 204 C90 196 90 188 90 182 L94 183Z"/>
+    {/* Right hand */}
+    <path {...O} strokeWidth={0.7} d="M102 222 C103 228 103 234 101 238 L98 240 C96 241 93 239 92 236 L91 232 L96 236Z"/>
+    {/* Left thigh */}
+    <path {...O} d="M36 146 L52 146 C54 160 56 178 56 196 L54 218 C52 228 50 234 48 238 L44 242 L38 242 C34 240 32 234 32 226 L30 206 C28 192 28 174 32 158Z"/>
+    {/* Left knee */}
+    <path {...O} d="M32 226 C30 232 30 240 32 246 L36 250 L46 250 L50 246 C52 240 52 232 50 226 L44 242 L38 242Z"/>
+    {/* Left shin+calf */}
+    <path {...O} d="M32 246 C30 256 30 268 32 278 L36 288 L44 290 L48 288 C50 278 50 264 50 252 L50 246 L46 250 L36 250Z"/>
+    {/* Left foot */}
+    <path {...O} strokeWidth={0.7} d="M32 278 C30 284 30 292 34 296 L44 298 L50 294 L50 288 L44 290 L36 288Z"/>
+    {/* Right thigh */}
+    <path {...O} d="M84 146 L68 146 C66 160 64 178 64 196 L66 218 C68 228 70 234 72 238 L76 242 L82 242 C86 240 88 234 88 226 L90 206 C92 192 92 174 88 158Z"/>
+    {/* Right knee */}
+    <path {...O} d="M88 226 C90 232 90 240 88 246 L84 250 L74 250 L70 246 C68 240 68 232 70 226 L76 242 L82 242Z"/>
+    {/* Right shin+calf */}
+    <path {...O} d="M88 246 C90 256 90 268 88 278 L84 288 L76 290 L72 288 C70 278 70 264 70 252 L70 246 L74 250 L84 250Z"/>
+    {/* Right foot */}
+    <path {...O} strokeWidth={0.7} d="M88 278 C90 284 90 292 86 296 L76 298 L70 294 L70 288 L76 290 L84 288Z"/>
+  </>;
+
   return (
-    <div style={{display:'flex',gap:8,justifyContent:'center',alignItems:'flex-start'}}>
+    <div style={{display:'flex',gap:6,justifyContent:'center',alignItems:'flex-start'}}>
+
+      {/* ── FRONT ── */}
       <div style={{textAlign:'center'}}>
-        <svg viewBox="0 0 120 280" width={112} height={175} style={{display:'block'}}>
-          {sil}
-          <path {...mp('shoulders')} d="M23 46 C17 52 14 64 15 76 L26 74 L29 52Z"/>
-          <path {...mp('shoulders')} d="M97 46 C103 52 106 64 105 76 L94 74 L91 52Z"/>
-          <path {...mp('chest')} d="M31 44 C35 50 57 60 57 78 L57 87 C44 86 30 74 28 62Z"/>
-          <path {...mp('chest')} d="M89 44 C85 50 63 60 63 78 L63 87 C76 86 90 74 92 62Z"/>
-          <line {...dl} x1="57" y1="60" x2="40" y2="50"/><line {...dl} x1="57" y1="68" x2="34" y2="58"/>
-          <line {...dl} x1="63" y1="60" x2="80" y2="50"/><line {...dl} x1="63" y1="68" x2="86" y2="58"/>
-          <line {...dl} strokeOpacity={0.35} x1="60" y1="44" x2="60" y2="90"/>
-          <path {...mp('arms')} d="M14 58 L14 108 L25 110 L27 58Z"/>
-          <path {...mp('arms')} d="M106 58 L106 108 L95 110 L93 58Z"/>
-          <path {...mp('arms', 0.6)} d="M13 118 L12 158 L23 160 L24 118Z"/>
-          <path {...mp('arms', 0.6)} d="M107 118 L108 158 L97 160 L96 118Z"/>
-          <path {...dl} d="M18 62 C16 76 16 94 18 108"/><path {...dl} d="M102 62 C104 76 104 94 102 108"/>
-          <rect {...mp('abs')} x="45" y="90" width="13" height="11" rx="3"/>
-          <rect {...mp('abs')} x="62" y="90" width="13" height="11" rx="3"/>
-          <rect {...mp('abs')} x="45" y="104" width="13" height="11" rx="3"/>
-          <rect {...mp('abs')} x="62" y="104" width="13" height="11" rx="3"/>
-          <rect {...mp('abs')} x="45" y="118" width="13" height="11" rx="3"/>
-          <rect {...mp('abs')} x="62" y="118" width="13" height="11" rx="3"/>
-          <path {...mp('abs', 0.55)} d="M32 90 L45 95 L45 132 L32 130Z"/>
-          <path {...mp('abs', 0.55)} d="M88 90 L75 95 L75 132 L88 130Z"/>
-          <line {...dl} x1="60" y1="90" x2="60" y2="134"/>
-          <path {...dl} d="M45 94 L36 98"/><path {...dl} d="M45 103 L34 108"/>
-          <path {...dl} d="M75 94 L84 98"/><path {...dl} d="M75 103 L86 108"/>
-          <path {...mp('legs')} d="M38 145 L56 145 L58 200 L42 206 L24 198Z"/>
-          <path {...mp('legs')} d="M82 145 L64 145 L62 200 L78 206 L96 198Z"/>
-          <ellipse {...mp('legs', 0.75)} cx="43" cy="198" rx="7" ry="9"/>
-          <ellipse {...mp('legs', 0.75)} cx="77" cy="198" rx="7" ry="9"/>
-          <path {...dl} d="M41 149 C39 168 39 188 41 200"/><path {...dl} d="M79 149 C81 168 81 188 79 200"/>
-          <path {...dl} d="M49 146 C49 168 50 190 52 200"/><path {...dl} d="M71 146 C71 168 70 190 68 200"/>
-          <path {...mp('legs', 0.5)} d="M35 214 L47 214 L46 256 L36 254Z"/>
-          <path {...mp('legs', 0.5)} d="M85 214 L73 214 L74 256 L84 254Z"/>
+        <svg viewBox="0 0 120 305" width={115} height={195} style={{display:'block'}}>
+          <Silhouette/>
+          {/* Trapezius (front) */}
+          <path {...F('back',0.5)} d="M54 42 C50 44 42 48 34 56 L44 54 L52 50Z"/>
+          <path {...F('back',0.5)} d="M66 42 C70 44 78 48 86 56 L76 54 L68 50Z"/>
+          {/* Anterior deltoid */}
+          <path {...F('shoulders')} d="M20 76 C14 84 12 96 14 108 L20 106 C22 94 24 84 28 78Z"/>
+          <path {...F('shoulders')} d="M100 76 C106 84 108 96 106 108 L100 106 C98 94 96 84 92 78Z"/>
+          {/* Pectoralis major */}
+          <path {...F('chest')} d="M34 64 C36 72 46 80 56 84 L56 96 C44 94 34 86 30 76 C28 70 30 66 34 64Z"/>
+          <path {...F('chest')} d="M86 64 C84 72 74 80 64 84 L64 96 C76 94 86 86 90 76 C92 70 90 66 86 64Z"/>
+          <line {...D} x1="60" y1="60" x2="60" y2="98"/>
+          <path {...D} d="M56 70 C50 66 42 62 36 62"/><path {...D} d="M56 80 C48 78 40 74 34 72"/>
+          <path {...D} d="M64 70 C70 66 78 62 84 62"/><path {...D} d="M64 80 C72 78 80 74 86 72"/>
+          {/* Serratus anterior */}
+          <path {...F('abs',0.45)} d="M28 96 C26 104 26 112 28 118 L32 116 L30 106Z"/>
+          <path {...F('abs',0.45)} d="M92 96 C94 104 94 112 92 118 L88 116 L90 106Z"/>
+          <path {...D} d="M28 100 C32 98 34 96 36 95"/><path {...D} d="M28 108 C32 106 36 104 38 102"/>
+          <path {...D} d="M92 100 C88 98 86 96 84 95"/><path {...D} d="M92 108 C88 106 84 104 82 102"/>
+          {/* Rectus abdominis */}
+          <path {...F('abs')} d="M44 98 C44 98 56 98 56 98 L56 112 C56 112 44 112 44 112Z" rx="3"/>
+          <path {...F('abs')} d="M64 98 L76 98 L76 112 L64 112Z" rx="3"/>
+          <path {...F('abs')} d="M44 114 L56 114 L56 126 L44 126Z" rx="3"/>
+          <path {...F('abs')} d="M64 114 L76 114 L76 126 L64 126Z" rx="3"/>
+          <path {...F('abs')} d="M44 128 L56 128 L56 140 L44 140Z" rx="3"/>
+          <path {...F('abs')} d="M64 128 L76 128 L76 140 L64 140Z" rx="3"/>
+          <line {...D} x1="60" y1="98" x2="60" y2="142"/>
+          <line {...D} x1="42" y1="112" x2="78" y2="112"/>
+          <line {...D} x1="42" y1="126" x2="78" y2="126"/>
+          {/* Obliques */}
+          <path {...F('abs',0.6)} d="M28 100 C28 112 30 124 34 134 L40 138 L42 128 L40 116 L36 104Z"/>
+          <path {...F('abs',0.6)} d="M92 100 C92 112 90 124 86 134 L80 138 L78 128 L80 116 L84 104Z"/>
+          {/* Biceps */}
+          <path {...F('arms')} d="M10 92 C9 104 9 118 11 130 L14 138 L18 136 L18 120 L16 106 L14 92Z"/>
+          <path {...F('arms')} d="M110 92 C111 104 111 118 109 130 L106 138 L102 136 L102 120 L104 106 L106 92Z"/>
+          <path {...D} d="M10 96 C10 108 11 120 13 130"/><path {...D} d="M110 96 C110 108 109 120 107 130"/>
+          {/* Brachialis */}
+          <path {...F('arms',0.6)} d="M14 130 C12 140 12 152 14 162 L18 168 L22 166 L22 154 L20 140 L18 132Z"/>
+          <path {...F('arms',0.6)} d="M106 130 C108 140 108 152 106 162 L102 168 L98 166 L98 154 L100 140 L102 132Z"/>
+          <path {...D} d="M13 134 C12 146 12 156 14 164"/><path {...D} d="M107 134 C108 146 108 156 106 164"/>
+          {/* Forearm flexors */}
+          <path {...F('arms',0.5)} d="M18 170 C16 180 16 196 18 208 L22 216 L26 214 L26 200 L24 184 L22 174Z"/>
+          <path {...F('arms',0.5)} d="M102 170 C104 180 104 196 102 208 L98 216 L94 214 L94 200 L96 184 L98 174Z"/>
+          {/* Quads */}
+          <path {...F('legs')} d="M32 158 C30 172 30 190 32 206 L36 218 L40 222 L44 220 L46 206 L46 190 L44 172 L42 158Z"/>
+          <path {...F('legs')} d="M42 158 C44 172 46 188 46 204 L44 220 L50 224 L54 220 L56 206 L56 188 L54 170 L50 158Z"/>
+          <path {...F('legs')} d="M88 158 C90 172 90 190 88 206 L84 218 L80 222 L76 220 L74 206 L74 190 L76 172 L78 158Z"/>
+          <path {...F('legs')} d="M78 158 C76 172 74 188 74 204 L76 220 L70 224 L66 220 L64 206 L64 188 L66 170 L70 158Z"/>
+          <path {...D} d="M36 160 C34 178 34 198 36 214"/><path {...D} d="M46 160 C46 178 46 196 48 210"/>
+          <path {...D} d="M84 160 C86 178 86 198 84 214"/><path {...D} d="M74 160 C74 178 74 196 72 210"/>
+          {/* VMO teardrop */}
+          <ellipse {...F('legs',0.8)} cx="42" cy="228" rx="8" ry="10"/>
+          <ellipse {...F('legs',0.8)} cx="78" cy="228" rx="8" ry="10"/>
+          {/* Tibialis anterior */}
+          <path {...F('legs',0.5)} d="M32 250 C30 262 30 274 32 282 L36 286 L40 284 L40 270 L38 256Z"/>
+          <path {...F('legs',0.5)} d="M88 250 C90 262 90 274 88 282 L84 286 L80 284 L80 270 L82 256Z"/>
+          <path {...D} d="M33 254 C32 266 32 276 34 284"/><path {...D} d="M87 254 C88 266 88 276 86 284"/>
         </svg>
         <div style={{fontFamily:'var(--font-mono)',fontSize:7.5,letterSpacing:0.18,textTransform:'uppercase',color:'var(--ink-60)',marginTop:4}}>Front</div>
       </div>
+
+      {/* ── BACK ── */}
       <div style={{textAlign:'center'}}>
-        <svg viewBox="0 0 120 280" width={112} height={175} style={{display:'block'}}>
-          {sil}
-          <path {...mp('back')} d="M60 36 L86 52 L82 72 L60 78 L38 72 L34 52Z"/>
-          <path {...dl} d="M55 37 L38 52"/><path {...dl} d="M65 37 L82 52"/><line {...dl} x1="60" y1="36" x2="60" y2="78"/>
-          <path {...mp('shoulders')} d="M23 46 C17 52 14 64 15 76 L26 74 L34 52Z"/>
-          <path {...mp('shoulders')} d="M97 46 C103 52 106 64 105 76 L94 74 L86 52Z"/>
-          <path {...mp('arms')} d="M14 58 L14 108 L25 110 L27 58Z"/>
-          <path {...mp('arms')} d="M106 58 L106 108 L95 110 L93 58Z"/>
-          <path {...dl} d="M18 62 C16 76 18 94 20 106"/><path {...dl} d="M23 60 C24 76 24 96 22 108"/>
-          <path {...dl} d="M102 62 C104 76 102 94 100 106"/><path {...dl} d="M97 60 C96 76 96 96 98 108"/>
-          <path {...mp('arms', 0.6)} d="M13 118 L12 158 L23 160 L24 118Z"/>
-          <path {...mp('arms', 0.6)} d="M107 118 L108 158 L97 160 L96 118Z"/>
-          <path {...mp('back', 0.85)} d="M36 70 L40 72 L42 136 L22 140 L19 96Z"/>
-          <path {...mp('back', 0.85)} d="M84 70 L80 72 L78 136 L98 140 L101 96Z"/>
-          <path {...dl} d="M40 74 L24 100"/><path {...dl} d="M40 82 L22 114"/><path {...dl} d="M40 92 L22 128"/>
-          <path {...dl} d="M80 74 L96 100"/><path {...dl} d="M80 82 L98 114"/><path {...dl} d="M80 92 L98 128"/>
-          <path {...mp('back', 0.55)} d="M42 70 L78 70 L76 82 L60 88 L44 82Z"/>
-          <rect {...mp('back', 0.65)} x="53" y="78" width="5" height="60" rx="2.5"/>
-          <rect {...mp('back', 0.65)} x="62" y="78" width="5" height="60" rx="2.5"/>
-          <path {...mp('legs')} d="M38 143 L60 140 L60 194 L42 198 L24 192Z"/>
-          <path {...mp('legs')} d="M82 143 L60 140 L60 194 L78 198 L96 192Z"/>
-          <line {...dl} x1="60" y1="140" x2="60" y2="196"/>
-          <path {...mp('legs', 0.85)} d="M24 194 L44 198 L44 252 L36 260 L22 252Z"/>
-          <path {...mp('legs', 0.85)} d="M96 194 L76 198 L76 252 L84 260 L98 252Z"/>
-          <path {...dl} d="M34 198 C32 218 32 238 34 252"/><path {...dl} d="M86 198 C88 218 88 238 86 252"/>
-          <path {...mp('legs', 0.7)} d="M22 256 L40 254 L38 272 L22 268Z"/>
-          <path {...mp('legs', 0.7)} d="M98 256 L80 254 L82 272 L98 268Z"/>
-          <path {...mp('legs', 0.5)} d="M40 254 L46 252 L44 272 L38 272Z"/>
-          <path {...mp('legs', 0.5)} d="M80 254 L74 252 L76 272 L82 272Z"/>
-          <path {...dl} d="M31 256 C30 262 30 268 32 272"/><path {...dl} d="M89 256 C90 262 90 268 88 272"/>
+        <svg viewBox="0 0 120 305" width={115} height={195} style={{display:'block'}}>
+          <Silhouette/>
+          {/* Trapezius upper */}
+          <path {...F('back',0.8)} d="M54 42 C50 46 42 52 36 58 L46 60 L54 54 L60 52 L66 54 L74 60 L84 58 C78 52 70 46 66 42Z"/>
+          {/* Trapezius middle */}
+          <path {...F('back',0.7)} d="M36 58 C32 64 30 72 30 80 L38 76 L46 72 L54 70 L60 68 L66 70 L74 72 L82 76 L90 80 C90 72 88 64 84 58 L74 60 L60 52Z"/>
+          <line {...D} x1="60" y1="52" x2="60" y2="96"/>
+          <path {...D} d="M54 58 C48 62 42 64 36 64"/><path {...D} d="M54 68 C48 70 42 72 38 74"/>
+          <path {...D} d="M66 58 C72 62 78 64 84 64"/><path {...D} d="M66 68 C72 70 78 72 82 74"/>
+          {/* Infraspinatus / rhomboids */}
+          <path {...F('back',0.6)} d="M38 76 C34 82 32 92 34 100 L40 96 L44 88 L46 78Z"/>
+          <path {...F('back',0.6)} d="M82 76 C86 82 88 92 86 100 L80 96 L76 88 L74 78Z"/>
+          <path {...F('back',0.55)} d="M42 78 C42 84 44 92 46 98 L54 96 L56 88 L54 80Z"/>
+          <path {...F('back',0.55)} d="M78 78 C78 84 76 92 74 98 L66 96 L64 88 L66 80Z"/>
+          {/* Teres major */}
+          <path {...F('back',0.65)} d="M30 82 C24 90 20 100 20 110 L26 106 L32 96 L34 86Z"/>
+          <path {...F('back',0.65)} d="M90 82 C96 90 100 100 100 110 L94 106 L88 96 L86 86Z"/>
+          {/* Posterior deltoid */}
+          <path {...F('shoulders')} d="M20 76 C14 84 12 96 14 108 L20 106 C22 94 24 84 28 80Z"/>
+          <path {...F('shoulders')} d="M100 76 C106 84 108 96 106 108 L100 106 C98 94 96 84 92 80Z"/>
+          {/* Latissimus dorsi */}
+          <path {...F('back',0.9)} d="M30 80 C24 90 22 106 24 120 L28 136 L36 142 L44 142 L42 124 L40 106 L36 90Z"/>
+          <path {...F('back',0.9)} d="M90 80 C96 90 98 106 96 120 L92 136 L84 142 L76 142 L78 124 L80 106 L84 90Z"/>
+          <path {...D} d="M30 88 C26 100 24 114 26 126"/><path {...D} d="M36 86 C34 100 34 116 36 130"/>
+          <path {...D} d="M90 88 C94 100 96 114 94 126"/><path {...D} d="M84 86 C86 100 86 116 84 130"/>
+          {/* Erector spinae */}
+          <rect {...F('back',0.6)} x="54" y="96" width="5" height="46" rx="2.5"/>
+          <rect {...F('back',0.6)} x="61" y="96" width="5" height="46" rx="2.5"/>
+          <path {...D} d="M56 100 C56 118 56 132 56 142"/><path {...D} d="M64 100 C64 118 64 132 64 142"/>
+          {/* Triceps */}
+          <path {...F('arms')} d="M10 92 C9 104 9 118 11 130 L14 138 L18 136 L18 120 L16 106 L14 92Z"/>
+          <path {...F('arms')} d="M110 92 C111 104 111 118 109 130 L106 138 L102 136 L102 120 L104 106 L106 92Z"/>
+          <path {...D} d="M11 96 C10 110 10 122 12 132"/><path {...D} d="M16 94 C16 108 16 122 16 134"/>
+          <path {...D} d="M109 96 C110 110 110 122 108 132"/><path {...D} d="M104 94 C104 108 104 122 104 134"/>
+          {/* Forearm extensors */}
+          <path {...F('arms',0.5)} d="M18 170 C16 180 16 196 18 208 L22 216 L26 214 L26 200 L24 184 L22 174Z"/>
+          <path {...F('arms',0.5)} d="M102 170 C104 180 104 196 102 208 L98 216 L94 214 L94 200 L96 184 L98 174Z"/>
+          {/* Gluteus maximus */}
+          <path {...F('legs',0.95)} d="M32 148 C28 158 28 172 30 184 L36 190 L44 192 L52 188 L56 178 L56 162 L52 150Z"/>
+          <path {...F('legs',0.95)} d="M88 148 C92 158 92 172 90 184 L84 190 L76 192 L68 188 L64 178 L64 162 L68 150Z"/>
+          <line {...D} x1="60" y1="148" x2="60" y2="194"/>
+          <path {...D} d="M36 154 C32 164 30 176 32 186"/><path {...D} d="M52 152 C52 164 52 178 52 188"/>
+          <path {...D} d="M84 154 C88 164 90 176 88 186"/><path {...D} d="M68 152 C68 164 68 178 68 188"/>
+          {/* Hamstrings */}
+          <path {...F('legs')} d="M30 184 C28 198 28 216 30 230 L34 240 L38 242 L44 240 L46 228 L46 210 L44 194 L38 190Z"/>
+          <path {...F('legs')} d="M90 184 C92 198 92 216 90 230 L86 240 L82 242 L76 240 L74 228 L74 210 L76 194 L82 190Z"/>
+          <path {...D} d="M32 188 C30 204 30 220 32 234"/><path {...D} d="M44 192 C44 208 44 224 44 238"/>
+          <path {...D} d="M88 188 C90 204 90 220 88 234"/><path {...D} d="M76 192 C76 208 76 224 76 238"/>
+          {/* Gastrocnemius (calf) */}
+          <path {...F('legs',0.85)} d="M30 246 C28 258 28 272 30 282 L34 288 L38 290 L44 290 L48 286 L50 274 L50 258 L48 246 L44 242Z"/>
+          <path {...F('legs',0.85)} d="M90 246 C92 258 92 272 90 282 L86 288 L82 290 L76 290 L72 286 L70 274 L70 258 L72 246 L76 242Z"/>
+          <path {...D} d="M32 252 C30 264 30 276 32 284"/><path {...D} d="M46 250 C48 262 48 274 46 284"/>
+          <path {...D} d="M88 252 C90 264 90 276 88 284"/><path {...D} d="M74 250 C72 262 72 274 74 284"/>
         </svg>
         <div style={{fontFamily:'var(--font-mono)',fontSize:7.5,letterSpacing:0.18,textTransform:'uppercase',color:'var(--ink-60)',marginTop:4}}>Back</div>
       </div>
@@ -682,7 +754,7 @@ function Dashboard({ state, dispatch, navigate, setShowPaywall }) {
       </div>
 
       <div style={{ marginTop:28, paddingTop:14, borderTop:"1px solid var(--ink)", display:"flex", justifyContent:"flex-end" }}>
-        <span onClick={() => dispatch({ type:"RESET_SPLIT" })} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.18, textTransform:"uppercase", color:"var(--ink-60)", cursor:"pointer", borderBottom:"1px solid var(--ink-60)" }}>Reset Week</span>
+        <span onClick={() => { if(window.confirm('Reset this week? All progress will be permanently deleted.')) dispatch({ type:"RESET_SPLIT" }); }} style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.18, textTransform:"uppercase", color:"var(--ink-60)", cursor:"pointer", borderBottom:"1px solid var(--ink-60)" }}>Reset Week</span>
       </div>
     </div>
   );
@@ -726,22 +798,23 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
 
   const laggingGroups = (() => {
     const lagging = new Set();
-    // Accumulate uncompleted exercises from every previously completed day
-    splitCompletedDays.filter(d => d < dayId).forEach(prevDay => {
+    // Check every day before current (not just "done" days) for skipped exercises
+    for (let prevDay = 1; prevDay < dayId; prevDay++) {
       const prevPlan = isCustom ? (customPlan.days[prevDay-1]||{}) : (SPLITS[activeSplit]?.days[prevDay-1]||{});
-      const prevAllIds = [...(prevPlan.main||[]), ...(prevPlan.other||[])];
+      const prevMainIds = prevPlan.main||[], prevOtherIds = prevPlan.other||[];
+      const prevAllIds = [...prevMainIds, ...prevOtherIds];
+      if (prevAllIds.length === 0) continue;
       const prevHidden = ((hiddenSlots||{})[activeSplit]||{})[prevDay] || [];
-      prevAllIds.forEach((exId, slot) => {
-        if (prevHidden.includes(slot)) return;
+      const prevExtras = ((state.extraPlan||{})[activeSplit]||{})[prevDay] || [];
+      [...prevAllIds.map((id,slot) => ({id, slot})), ...prevExtras.map(e => ({id:e.id, slot:e.slot}))].forEach(({id, slot}) => {
+        if (prevAllIds[slot] !== undefined && prevHidden.includes(slot)) return;
         const wasDone = splitCompletions.some(c => c.day===prevDay && c.slot===slot);
-        if (!wasDone) { const ex=exerciseById(exId); if(ex.group && !todayGroupsCovered.has(ex.group)) lagging.add(ex.group); }
+        if (!wasDone) {
+          const ex = exerciseById(id);
+          if (ex.group && !todayGroupsCovered.has(ex.group)) lagging.add(ex.group);
+        }
       });
-    });
-    // Also flag groups below 60% of weekly target not covered today
-    MUSCLE_GROUPS.forEach(g => {
-      const t=weekTargets[g]||0; if(!t) return;
-      if ((weekProg[g]||0)/t < 0.6 && !todayGroupsCovered.has(g)) lagging.add(g);
-    });
+    }
     return MUSCLE_GROUPS.filter(g => lagging.has(g));
   })();
   const laggingRecs = {};
@@ -749,8 +822,12 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
     laggingRecs[g] = Object.values(EXERCISES).filter(ex=>ex.group===g&&!allPlanIds.includes(ex.id)).slice(0,5);
   });
 
-  // Catalog
-  const inPlanSet = new Set(allPlanIds);
+  // Catalog — hidden (removed) exercises are excluded so they re-appear here
+  const visiblePlanIds = [
+    ...mainIds.filter((_,i) => !dayHidden.includes(i)),
+    ...otherIds.filter((_,i) => !dayHidden.includes(mainIds.length + i)),
+  ];
+  const inPlanSet = new Set([...visiblePlanIds, ...dayExtraPlan.map(e=>e.id)]);
   const q = searchQ.trim().toLowerCase();
   const catalogByGroup = {};
   MUSCLE_GROUPS.forEach(g => catalogByGroup[g]=[]);
@@ -923,10 +1000,12 @@ function DayScreen({ state, dispatch, navigate, dayId, isPro=false, setShowPaywa
   );
 }
 
-function PaywallModal({ onClose, onUpgrade }) {
+function PaywallModal({ onClose }) {
+  const { useState: useStatePaywall } = React;
+  const [pick, setPick] = useStatePaywall('yearly');
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:300, display:"flex", alignItems:"flex-end", justifyContent:"center" }} onClick={onClose}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--paper)", width:"100%", maxWidth:440, padding:"30px 26px 48px", boxSizing:"border-box", borderRadius:"20px 20px 0 0", color:"var(--ink)", fontFamily:"var(--font-body)" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--paper)", width:"100%", maxWidth:440, padding:"30px 26px 44px", boxSizing:"border-box", borderRadius:"20px 20px 0 0", color:"var(--ink)", fontFamily:"var(--font-body)" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
           <div>
             <div style={{ fontFamily:"var(--font-display)", fontSize:28, letterSpacing:-0.2, lineHeight:1 }}><span style={{ fontStyle:"italic" }}>Training</span> Pro</div>
@@ -934,27 +1013,46 @@ function PaywallModal({ onClose, onUpgrade }) {
           </div>
           <button onClick={onClose} style={{ background:"transparent", border:"1px solid var(--rule)", fontFamily:"var(--font-mono)", fontSize:14, color:"var(--ink-60)", cursor:"pointer", width:30, height:30, display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
         </div>
-        <div style={{ height:1, background:"var(--rule)", margin:"20px 0" }}/>
+        <div style={{ height:1, background:"var(--rule)", margin:"16px 0" }}/>
         {[
-          { label:"Unlimited custom splits", sub:"Build and save as many routines as you need" },
-          { label:"Smart Auto-Balance", sub:"AI adjusts your week based on machine availability & frequency" },
-          { label:"Advanced Analytics", sub:"Volume trends, lift PRs, fatigue patterns over time" },
+          { label:"Muscle Map & Analytics", sub:"Heat map, volume trends, personal records" },
+          { label:"Smart Fill the Gap", sub:"AI spots lagging muscles and fills your day" },
+          { label:"Full History", sub:"Week-by-week logs and progress over time" },
         ].map((f,i) => (
-          <div key={i} style={{ display:"flex", gap:14, marginBottom:16, alignItems:"flex-start" }}>
-            <div style={{ width:6, height:6, borderRadius:999, background:"var(--accent)", flexShrink:0, marginTop:7 }}/>
+          <div key={i} style={{ display:"flex", gap:12, marginBottom:12, alignItems:"flex-start" }}>
+            <div style={{ width:6, height:6, borderRadius:999, background:"var(--accent)", flexShrink:0, marginTop:6 }}/>
             <div>
-              <div style={{ fontFamily:"var(--font-display)", fontSize:16, letterSpacing:-0.1 }}>{f.label}</div>
-              <div style={{ fontFamily:"var(--font-body)", fontSize:12, color:"var(--ink-60)", marginTop:2, fontStyle:"italic" }}>{f.sub}</div>
+              <div style={{ fontFamily:"var(--font-display)", fontSize:15, letterSpacing:-0.1 }}>{f.label}</div>
+              <div style={{ fontFamily:"var(--font-body)", fontSize:11.5, color:"var(--ink-60)", marginTop:1, fontStyle:"italic" }}>{f.sub}</div>
             </div>
           </div>
         ))}
-        <div style={{ marginTop:26 }}>
-          <button onClick={onUpgrade} style={{ width:"100%", fontFamily:"var(--font-mono)", fontSize:12, letterSpacing:0.18, textTransform:"uppercase", padding:"17px", background:"var(--ink)", color:"var(--paper)", border:"none", cursor:"pointer", borderRadius:0 }}>
-            Start Pro — $0.99 AUD / month
-          </button>
-          <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, textAlign:"center", color:"var(--ink-60)", marginTop:10, letterSpacing:0.1 }}>
-            or $9.99 AUD / year · Cancel anytime
-          </div>
+        <div style={{ height:1, background:"var(--rule)", margin:"16px 0" }}/>
+        {/* Plan selector */}
+        <div style={{ display:"flex", gap:8, marginBottom:16 }}>
+          {[
+            { id:"monthly", label:"Monthly", price:"$1.99", period:"AUD / mo", badge:null },
+            { id:"yearly",  label:"Yearly",  price:"$9.99", period:"AUD / yr", badge:"Save 58%" },
+          ].map(p => (
+            <button key={p.id} onClick={()=>setPick(p.id)} style={{
+              flex:1, padding:"14px 10px", border:`2px solid ${pick===p.id?"var(--ink)":"var(--rule)"}`,
+              background: pick===p.id ? "var(--ink)" : "transparent",
+              color: pick===p.id ? "var(--paper)" : "var(--ink)",
+              cursor:"pointer", textAlign:"center", position:"relative", transition:"all 140ms"
+            }}>
+              {p.badge && <span style={{ position:"absolute", top:-9, left:"50%", transform:"translateX(-50%)", background:"var(--accent)", color:"#fff", fontFamily:"var(--font-mono)", fontSize:7, letterSpacing:0.14, textTransform:"uppercase", padding:"2px 7px", whiteSpace:"nowrap" }}>{p.badge}</span>}
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:9, letterSpacing:0.14, textTransform:"uppercase", opacity:0.7, marginBottom:4 }}>{p.label}</div>
+              <div style={{ fontFamily:"var(--font-display)", fontSize:22, letterSpacing:-0.05, lineHeight:1 }}>{p.price}</div>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:8.5, opacity:0.6, marginTop:3 }}>{p.period}</div>
+            </button>
+          ))}
+        </div>
+        <button onClick={()=>{ window.open(pick==='monthly'?STRIPE_MONTHLY:STRIPE_YEARLY,"_blank"); onClose(); }}
+          style={{ width:"100%", fontFamily:"var(--font-mono)", fontSize:12, letterSpacing:0.18, textTransform:"uppercase", padding:"17px", background:"var(--ink)", color:"var(--paper)", border:"none", cursor:"pointer" }}>
+          Start Pro — {pick==='monthly' ? '$1.99 / month' : '$9.99 / year'} →
+        </button>
+        <div style={{ fontFamily:"var(--font-mono)", fontSize:9, textAlign:"center", color:"var(--ink-60)", marginTop:10, letterSpacing:0.1 }}>
+          Cancel anytime · Secure payment via Stripe
         </div>
       </div>
     </div>
@@ -966,15 +1064,22 @@ function WorkoutCalendar({ weekHistory }) {
   const year = now.getFullYear(), month = now.getMonth();
   const firstDow = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month+1, 0).getDate();
-  const workoutDays = new Set();
+  const [selected, setSelected] = React.useState(null);
+
+  // Map each calendar date to its week entry
+  const dayToEntry = {};
   weekHistory.forEach(w => {
     const d = new Date(w.completedAt);
-    if (d.getFullYear()===year && d.getMonth()===month) workoutDays.add(d.getDate());
+    if (d.getFullYear()===year && d.getMonth()===month) dayToEntry[d.getDate()] = w;
   });
+
   const cells = [];
   for (let i=0; i<firstDow; i++) cells.push(null);
   for (let d=1; d<=daysInMonth; d++) cells.push(d);
   const monthLabel = now.toLocaleDateString("en-AU", { month:"long", year:"numeric" });
+
+  const entry = selected ? dayToEntry[selected] : null;
+
   return (
     <div>
       <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, letterSpacing:0.14, textTransform:"uppercase", color:"var(--ink-60)", marginBottom:10, textAlign:"center" }}>{monthLabel}</div>
@@ -987,19 +1092,65 @@ function WorkoutCalendar({ weekHistory }) {
         {cells.map((d,i) => {
           if (!d) return <div key={`e${i}`}/>;
           const isToday = d===now.getDate();
-          const hasWorkout = workoutDays.has(d);
+          const hasWorkout = !!dayToEntry[d];
+          const isSelected = selected===d;
           return (
-            <div key={d} style={{
-              aspectRatio:"1", display:"flex", alignItems:"center", justifyContent:"center",
-              background: isToday ? "var(--ink)" : hasWorkout ? "var(--accent-tint)" : "transparent",
-              border: `1px solid ${isToday ? "var(--ink)" : hasWorkout ? "var(--accent)" : "var(--rule)"}`,
-              borderRadius:3, position:"relative",
-            }}>
-              <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontVariantNumeric:"tabular-nums", color: isToday ? "var(--paper)" : hasWorkout ? "var(--accent)" : "var(--ink-60)" }}>{d}</span>
+            <div key={d} onClick={() => hasWorkout && setSelected(isSelected ? null : d)}
+              style={{
+                aspectRatio:"1", display:"flex", alignItems:"center", justifyContent:"center",
+                background: isToday ? "var(--ink)" : isSelected ? "#f97316" : hasWorkout ? "rgba(249,115,22,0.15)" : "transparent",
+                border: `1px solid ${isToday ? "var(--ink)" : isSelected ? "#f97316" : hasWorkout ? "#f97316" : "var(--rule)"}`,
+                borderRadius:3, cursor: hasWorkout ? "pointer" : "default",
+              }}>
+              <span style={{ fontFamily:"var(--font-mono)", fontSize:10, fontVariantNumeric:"tabular-nums",
+                color: isToday ? "var(--paper)" : isSelected ? "#fff" : hasWorkout ? "#f97316" : "var(--ink-60)" }}>{d}</span>
             </div>
           );
         })}
       </div>
+
+      {/* Workout detail panel */}
+      {entry && (
+        <div style={{ marginTop:14, border:"1px solid #f97316", padding:"14px 16px", borderRadius:2 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <div>
+              <div style={{ fontFamily:"var(--font-mono)", fontSize:8.5, letterSpacing:0.16, textTransform:"uppercase", color:"#f97316" }}>
+                {new Date(entry.completedAt).toLocaleDateString("en-AU",{weekday:"short",day:"numeric",month:"short"})}
+              </div>
+              <div style={{ fontFamily:"var(--font-display)", fontSize:17, fontStyle:"italic", marginTop:2 }}>
+                {(typeof SPLITS !== 'undefined' && SPLITS[entry.split]?.label) || entry.split}
+              </div>
+            </div>
+            <button onClick={() => setSelected(null)} style={{ background:"transparent", border:"none", color:"var(--ink-60)", fontSize:18, cursor:"pointer", lineHeight:1, padding:"0 4px" }}>×</button>
+          </div>
+          {(() => {
+            // Group completions by day number
+            const byDay = {};
+            (entry.completions||[]).forEach(c => {
+              if (!byDay[c.day]) byDay[c.day] = [];
+              const ex = exerciseById(c.id);
+              const dsKey = `${c.day}_${c.slot}`;
+              const sets = (entry.detailedSets||{})[dsKey] || [];
+              byDay[c.day].push({ ex, sets });
+            });
+            return Object.entries(byDay).sort((a,b)=>+a[0]-+b[0]).map(([day, exList]) => (
+              <div key={day} style={{ marginBottom:10 }}>
+                <div style={{ fontFamily:"var(--font-mono)", fontSize:7.5, letterSpacing:0.14, textTransform:"uppercase", color:"var(--ink-60)", marginBottom:5, borderBottom:"1px solid var(--rule)", paddingBottom:4 }}>Day {day}</div>
+                {exList.map(({ ex, sets }, idx) => (
+                  <div key={idx} style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", padding:"4px 0", borderBottom:"1px solid var(--rule)" }}>
+                    <div style={{ fontFamily:"var(--font-body)", fontSize:13 }}>{ex.name}</div>
+                    <div style={{ fontFamily:"var(--font-mono)", fontSize:9.5, color:"var(--ink-60)", flexShrink:0, marginLeft:8 }}>
+                      {sets.length > 0
+                        ? sets.map((s,i) => `${s.reps}×${s.kg}kg`).join(" · ")
+                        : `${sets.length || "–"} sets`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ));
+          })()}
+        </div>
+      )}
     </div>
   );
 }
@@ -1347,8 +1498,8 @@ function ProfileScreen({ state, dispatch, navigate }) {
             <div style={{ paddingBottom:12 }}>
               {[
                 { id:"free",    price:null,    period:null,    desc:"Basic tracking · No analytics" },
-                { id:"monthly", price:"$0.99", period:"/ mo",  desc:"All Pro features · Cancel anytime" },
-                { id:"yearly",  price:"$9.99", period:"/ yr",  desc:"≈ $0.83/month · Save 17%", badge:"Best Value" },
+                { id:"monthly", price:"$1.99", period:"/ mo",  desc:"All Pro features · Cancel anytime" },
+                { id:"yearly",  price:"$9.99", period:"/ yr",  desc:"≈ $0.83/month · Save 58%", badge:"Best Value" },
               ].map(p => (
                 <button key={p.id} onClick={()=>{ dispatch({type:"SET_PLAN", planType:p.id}); if(p.id==="monthly") window.open(STRIPE_MONTHLY,"_blank"); if(p.id==="yearly") window.open(STRIPE_YEARLY,"_blank"); }}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"13px 14px", marginBottom:6, background: planType===p.id ? "var(--ink)" : "transparent", color: planType===p.id ? "var(--paper)" : "var(--ink)", border:`1px solid ${planType===p.id?"var(--ink)":"var(--rule)"}`, cursor:"pointer", textAlign:"left", position:"relative", transition:"all 140ms" }}>
@@ -1367,7 +1518,8 @@ function ProfileScreen({ state, dispatch, navigate }) {
               {isPro && <div style={{ fontFamily:"var(--font-mono)", fontSize:8.5, color:"var(--ink-60)", letterSpacing:0.08, padding:"4px 2px" }}>To cancel, manage your subscription in Stripe.</div>}
             </div>
           )}
-          <Row label="Sign Out" onClick={()=>dispatch({type:"SIGN_OUT"})} accent last/>
+          <Row label="Sign Out" onClick={()=>dispatch({type:"SIGN_OUT"})} accent/>
+          <Row label="Delete Account" onClick={()=>{ if(window.confirm('Permanently delete your account and all data? This cannot be undone.')) dispatch({type:"SIGN_OUT"}); }} accent last/>
         </>
       )}
 
@@ -1402,6 +1554,37 @@ function ProfileScreen({ state, dispatch, navigate }) {
   );
 }
 
+function LegalModal({ title, onClose }) {
+  const content = title === 'Privacy Policy' ? [
+    'MyTrainingMate collects your email address and workout data (exercises, sets, reps, body measurements) solely to provide the training tracking service.',
+    'Your data is stored locally on your device. When you create an account, data may be synced to our servers to enable cross-device access.',
+    'We do not sell your personal data to third parties.',
+    'Subscription payments are processed by Stripe. We do not store your payment details.',
+    'You may delete your account and all associated data at any time from the Profile screen.',
+    'For questions: privacy@mytrainingmate.app',
+  ] : [
+    'By using MyTrainingMate you agree to these Terms of Service.',
+    'MyTrainingMate is provided "as is" without warranty. Consult a physician before starting any exercise program.',
+    'Pro subscriptions are billed monthly or annually. Cancel anytime — cancellations take effect at the end of the billing period.',
+    'Refunds are subject to the App Store or Google Play refund policies.',
+    'We reserve the right to update these terms. Continued use constitutes acceptance.',
+    'Contact: support@mytrainingmate.app',
+  ];
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:400, display:'flex', alignItems:'flex-end' }} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--paper)', width:'100%', maxHeight:'80vh', overflowY:'auto', padding:'28px 24px 48px', boxSizing:'border-box', borderRadius:'20px 20px 0 0', color:'var(--ink)' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+          <div style={{ fontFamily:'var(--font-display)', fontSize:22, fontStyle:'italic' }}>{title}</div>
+          <button onClick={onClose} style={{ background:'transparent', border:'1px solid var(--rule)', fontFamily:'var(--font-mono)', fontSize:14, color:'var(--ink-60)', cursor:'pointer', width:30, height:30, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+        </div>
+        {content.map((p,i) => (
+          <div key={i} style={{ fontFamily:'var(--font-body)', fontSize:13.5, lineHeight:1.65, color:'var(--ink)', marginBottom:14, paddingBottom:14, borderBottom: i<content.length-1 ? '1px solid var(--rule)' : 'none' }}>{p}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AuthScreen({ state, dispatch, navigate }) {
   const { useState: useStateAuth } = React;
   const [mode, setMode] = useStateAuth('welcome');
@@ -1409,6 +1592,7 @@ function AuthScreen({ state, dispatch, navigate }) {
   const [form, setForm] = useStateAuth({ email:'', password:'', name:'', goal:'', experience:'', daysPerWeek:'4' });
   const [termsOk, setTermsOk] = useStateAuth(false);
   const [error, setError] = useStateAuth('');
+  const [legalModal, setLegalModal] = useStateAuth(null);
   const set = (k, v) => setForm(f => ({...f, [k]:v}));
   const GOALS = [
     { id:'muscle',   label:'Build Muscle',    sub:'Gain strength & size' },
@@ -1461,15 +1645,31 @@ function AuthScreen({ state, dispatch, navigate }) {
         <div style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:0.18, textTransform:'uppercase', color:'var(--ink-60)' }}>Account</div>
         <div style={{ fontFamily:'var(--font-display)', fontSize:42, lineHeight:0.95, letterSpacing:-0.035, marginTop:10 }}><span style={{ fontStyle:'italic' }}>Welcome</span></div>
       </div>
-      <div style={{ textAlign:'center', padding:'48px 0 40px' }}>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:72, lineHeight:1, letterSpacing:-0.04, fontStyle:'italic' }}>MTM</div>
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:9.5, letterSpacing:0.2, textTransform:'uppercase', color:'var(--ink-60)', marginTop:8 }}>My Training Mate</div>
+      <div style={{ textAlign:'center', padding:'32px 0 32px' }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 1024 1024" style={{ display:'block', margin:'0 auto' }}>
+          <rect width="1024" height="1024" fill="#0f0f0f"/>
+          <rect x="398" y="248" width="228" height="22" rx="11" fill="#ffffff"/>
+          <rect x="377" y="232" width="24" height="54" rx="5" fill="#ffffff"/>
+          <rect x="340" y="218" width="36" height="82" rx="7" fill="#ffffff"/>
+          <rect x="304" y="205" width="34" height="108" rx="7" fill="#ffffff"/>
+          <rect x="270" y="192" width="30" height="134" rx="7" fill="#ffffff"/>
+          <rect x="623" y="232" width="24" height="54" rx="5" fill="#ffffff"/>
+          <rect x="648" y="218" width="36" height="82" rx="7" fill="#ffffff"/>
+          <rect x="686" y="205" width="34" height="108" rx="7" fill="#ffffff"/>
+          <rect x="720" y="192" width="30" height="134" rx="7" fill="#ffffff"/>
+          <rect x="180" y="400" width="664" height="3" fill="#C8F135"/>
+          <text x="512" y="680" textAnchor="middle" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif" fontSize="280" fontWeight="500" fontStyle="italic" letterSpacing="-8" fill="#ffffff">MTM</text>
+          <rect x="180" y="706" width="664" height="3" fill="#C8F135"/>
+          <text x="512" y="790" textAnchor="middle" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif" fontSize="38" fontWeight="400" fontStyle="italic" letterSpacing="14" fill="#C8F135">MY TRAINING MATE</text>
+          <text x="512" y="880" textAnchor="middle" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif" fontSize="26" fontWeight="400" letterSpacing="8" fill="#ffffff" opacity="0.3">TRAIN SMART</text>
+        </svg>
       </div>
       <button onClick={()=>setMode('signup')} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:17, background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer', marginBottom:12 }}>Create Account</button>
       <button onClick={()=>setMode('signin')} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:16, background:'transparent', color:'var(--ink)', border:'1px solid var(--ink)', cursor:'pointer' }}>Sign In</button>
       <div style={{ fontFamily:'var(--font-mono)', fontSize:8.5, color:'var(--ink-60)', textAlign:'center', marginTop:20, lineHeight:1.7 }}>
-        By continuing you agree to our <span style={{ textDecoration:'underline', cursor:'pointer' }}>Terms of Service</span> and <span style={{ textDecoration:'underline', cursor:'pointer' }}>Privacy Policy</span>
+        By continuing you agree to our <span onClick={()=>setLegalModal('Terms of Service')} style={{ textDecoration:'underline', cursor:'pointer' }}>Terms of Service</span> and <span onClick={()=>setLegalModal('Privacy Policy')} style={{ textDecoration:'underline', cursor:'pointer' }}>Privacy Policy</span>
       </div>
+      {legalModal && <LegalModal title={legalModal} onClose={()=>setLegalModal(null)}/>}
     </div>
   );
 
@@ -1485,9 +1685,40 @@ function AuthScreen({ state, dispatch, navigate }) {
         <div><div style={labelStyle}>Password</div><input type="password" value={form.password} onChange={e=>set('password',e.target.value)} placeholder="••••••••" style={inputStyle}/></div>
       </div>
       <button onClick={doSignIn} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:17, background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer', marginBottom:14 }}>Sign In</button>
+      <div style={{ textAlign:'center', fontFamily:'var(--font-mono)', fontSize:9.5, color:'var(--ink-60)', marginBottom:10 }}>
+        <span onClick={()=>setMode('forgot')} style={{ color:'var(--ink)', textDecoration:'underline', cursor:'pointer' }}>Forgot password?</span>
+      </div>
       <div style={{ textAlign:'center', fontFamily:'var(--font-mono)', fontSize:9.5, color:'var(--ink-60)' }}>
         No account?{' '}<span onClick={()=>{setMode('signup');setError('');}} style={{ color:'var(--ink)', textDecoration:'underline', cursor:'pointer' }}>Create one →</span>
       </div>
+    </div>
+  );
+
+  if (mode==='forgot') return (
+    <div style={{ padding:'0 24px 120px', color:'var(--ink)' }}>
+      <div style={{ paddingTop:8, display:'flex', alignItems:'center', gap:12, marginBottom:32 }}>
+        <button onClick={()=>setMode('signin')} style={{ background:'transparent', border:'1px solid var(--rule)', fontFamily:'var(--font-mono)', fontSize:10.5, letterSpacing:0.16, textTransform:'uppercase', color:'var(--ink)', padding:'10px 14px', minHeight:44, display:'flex', alignItems:'center', cursor:'pointer' }}>← Back</button>
+        <div style={{ fontFamily:'var(--font-display)', fontSize:28, letterSpacing:-0.03, fontStyle:'italic' }}>Reset Password</div>
+      </div>
+      <div style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color:'var(--ink-60)', letterSpacing:0.1, marginBottom:20, lineHeight:1.6 }}>
+        Enter your email and we'll send you a link to reset your password.
+      </div>
+      <div style={{ marginBottom:20 }}>
+        <div style={labelStyle}>Email</div>
+        <input type="email" value={form.email} onChange={e=>set('email',e.target.value)} placeholder="you@example.com" style={inputStyle}/>
+      </div>
+      {error && <div style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color:'var(--accent)', marginBottom:12 }}>{error}</div>}
+      <button onClick={()=>{ if(!form.email.includes('@')){setError('Enter a valid email');return;} setError(''); setMode('forgot-sent'); }} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:17, background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer' }}>Send Reset Link</button>
+    </div>
+  );
+
+  if (mode==='forgot-sent') return (
+    <div style={{ padding:'0 24px 120px', color:'var(--ink)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:300, textAlign:'center' }}>
+      <div style={{ fontFamily:'var(--font-display)', fontSize:32, fontStyle:'italic', marginBottom:12 }}>Check your email</div>
+      <div style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color:'var(--ink-60)', letterSpacing:0.1, lineHeight:1.7, marginBottom:28 }}>
+        We've sent a password reset link to{'\n'}<span style={{ color:'var(--ink)' }}>{form.email}</span>
+      </div>
+      <button onClick={()=>setMode('signin')} style={{ fontFamily:'var(--font-mono)', fontSize:10.5, letterSpacing:0.16, textTransform:'uppercase', padding:'12px 24px', background:'transparent', color:'var(--ink)', border:'1px solid var(--ink)', cursor:'pointer' }}>Back to Sign In</button>
     </div>
   );
 
@@ -1598,7 +1829,7 @@ function AuthScreen({ state, dispatch, navigate }) {
           <button onClick={()=>set('selectedPlan','monthly')} style={{ border: form.selectedPlan==='monthly' ? '2px solid var(--ink)' : '1px solid var(--rule)', padding:'16px 18px', background: form.selectedPlan==='monthly' ? 'var(--ink)' : 'transparent', color: form.selectedPlan==='monthly' ? 'var(--paper)' : 'var(--ink)', cursor:'pointer', textAlign:'left', transition:'all 160ms' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
               <div style={{ fontFamily:'var(--font-display)', fontSize:18, letterSpacing:-0.1 }}>Monthly</div>
-              <div><span style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:-0.05 }}>$0.99</span><span style={{ fontFamily:'var(--font-mono)', fontSize:9, opacity:0.6, marginLeft:4 }}>AUD / month</span></div>
+              <div><span style={{ fontFamily:'var(--font-display)', fontSize:22, letterSpacing:-0.05 }}>$1.99</span><span style={{ fontFamily:'var(--font-mono)', fontSize:9, opacity:0.6, marginLeft:4 }}>AUD / month</span></div>
             </div>
             <div style={{ fontFamily:'var(--font-mono)', fontSize:9, opacity:0.6, marginTop:4, letterSpacing:0.08 }}>Billed monthly · Cancel anytime</div>
           </button>
@@ -1608,14 +1839,14 @@ function AuthScreen({ state, dispatch, navigate }) {
             {termsOk && <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           </div>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:0.1, textAlign:'left' }}>
-            I agree to the <span style={{ textDecoration:'underline' }}>Terms of Service</span> and <span style={{ textDecoration:'underline' }}>Privacy Policy</span>
+            I agree to the <span onClick={()=>setLegalModal('Terms of Service')} style={{ textDecoration:'underline', cursor:'pointer' }}>Terms of Service</span> and <span onClick={()=>setLegalModal('Privacy Policy')} style={{ textDecoration:'underline', cursor:'pointer' }}>Privacy Policy</span>
           </span>
         </button>
       </>}
 
       <div style={{ marginTop:32 }}>
         <button onClick={doNext} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:17, background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer' }}>
-          {step==='plan' ? `Start Pro — ${form.selectedPlan==='monthly' ? '$0.99/mo' : '$9.99/yr'} →` : 'Continue →'}
+          {step==='plan' ? `Start Pro — ${form.selectedPlan==='monthly' ? '$1.99/mo' : '$9.99/yr'} →` : 'Continue →'}
         </button>
         {step==='plan' && (
           <button onClick={skipPlan} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:0.14, textTransform:'uppercase', padding:14, background:'transparent', color:'var(--ink-60)', border:'none', cursor:'pointer', marginTop:6 }}>
@@ -1633,8 +1864,8 @@ function AuthScreen({ state, dispatch, navigate }) {
 }
 
 const STRIPE_PK      = 'pk_live_51TJObr2c5hGzCMPfJS6oeIZuPB5hLuBmawy5pvePFNL5o2eZYurvW40qt2kl7VRJ5piLbqEYHhu7qEuOi9j6anIr00BZbE1yKJ';
-const STRIPE_YEARLY  = 'https://buy.stripe.com/bJebIU03X5ZHchObO0bfO01';
-const STRIPE_MONTHLY = 'https://buy.stripe.com/5kQ8wI03X87P3Li3hubfO00';
+const STRIPE_MONTHLY = 'https://buy.stripe.com/bJebIU03X5ZHchObO0bfO01';
+const STRIPE_YEARLY  = 'https://buy.stripe.com/5kQ8wI03X87P3Li3hubfO00';
 
 Object.assign(window, { WorkoutCalendar, BodyMap, Dashboard, DayScreen, AnalyticsScreen, ProfileScreen, AuthScreen, PaywallModal, computeProgress });
 </script>
@@ -1808,7 +2039,7 @@ function reducer(state, action) {
     case "SET_USER":
       return { ...state, user: action.user };
     case "SIGN_OUT":
-      return { ...state, user: null, isPro: false };
+      return { ...INITIAL_STATE, theme: state.theme };
 
     case "LOG_BODY_WEIGHT": {
       const entry = { date: Date.now(), kg: action.kg };
@@ -1897,9 +2128,14 @@ function App() {
   const [tweaks, setTweaks] = useStateApp({ accent:"vermilion", typePair:"serif-geist" });
   const [tweaksOn, setTweaksOn] = useStateApp(false);
   useEffectApp(() => {
-    const h = e => { if(e.data?.type==="__activate_edit_mode") setTweaksOn(true); if(e.data?.type==="__deactivate_edit_mode") setTweaksOn(false); };
+    const ALLOWED_ORIGIN = window.location.origin;
+    const h = e => {
+      if (e.origin !== ALLOWED_ORIGIN && e.origin !== 'null') return;
+      if(e.data?.type==="__activate_edit_mode") setTweaksOn(true);
+      if(e.data?.type==="__deactivate_edit_mode") setTweaksOn(false);
+    };
     window.addEventListener("message",h);
-    window.parent.postMessage({type:"__edit_mode_available"},"*");
+    try { window.parent.postMessage({type:"__edit_mode_available"}, ALLOWED_ORIGIN); } catch(_) {}
     return () => window.removeEventListener("message",h);
   },[]);
 
@@ -1953,7 +2189,7 @@ function App() {
       <div style={{ minHeight:"100vh", background:"var(--paper)", color:"var(--ink)", paddingTop:"env(safe-area-inset-top)", ...cssVars }}>
         <div style={{ paddingTop:12 }}>{renderScreen()}</div>
         <BottomNav/>
-        {showPaywall && <PaywallModal onClose={()=>setShowPaywall(false)} onUpgrade={()=>{ dispatch({type:"UPGRADE_PRO"}); setShowPaywall(false); }}/>}
+        {showPaywall && <PaywallModal onClose={()=>setShowPaywall(false)}/>}
       </div>
     );
   }
@@ -1970,7 +2206,7 @@ function App() {
         <div style={{ minHeight:"100%", background:"var(--paper)", color:"var(--ink)", paddingTop:54, position:"relative" }}>
           {renderScreen()}
           <BottomNav/>
-          {showPaywall && <PaywallModal onClose={()=>setShowPaywall(false)} onUpgrade={()=>{ dispatch({type:"UPGRADE_PRO"}); setShowPaywall(false); }}/>}
+          {showPaywall && <PaywallModal onClose={()=>setShowPaywall(false)}/>}
         </div>
       </IOSDevice>
       {!tweaksOn && <div style={{ position:"fixed", bottom:20, left:20, fontFamily:"ui-monospace,monospace", fontSize:10, letterSpacing:0.14, textTransform:"uppercase", color:"var(--ink-30)", pointerEvents:"none" }}>Training Log</div>}
@@ -1978,7 +2214,22 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+class ErrorBoundary extends React.Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  render() {
+    if (this.state.err) return (
+      <div style={{ padding:32, fontFamily:'system-ui', textAlign:'center' }}>
+        <div style={{ fontSize:22, fontWeight:600, marginBottom:12 }}>Something went wrong</div>
+        <div style={{ fontSize:13, color:'#666', marginBottom:24 }}>{String(this.state.err)}</div>
+        <button onClick={()=>this.setState({err:null})} style={{ padding:'10px 24px', background:'#111', color:'#fff', border:'none', cursor:'pointer', fontSize:13 }}>Try Again</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<ErrorBoundary><App /></ErrorBoundary>);
 </script>
 
 <script>
