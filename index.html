@@ -1564,30 +1564,7 @@ function ProfileScreen({ state, dispatch, navigate, onSignOut }) {
 }
 
 const PRIVACY_URL = 'https://app.termly.io/document/privacy-policy/23c9f527-18f2-4b26-aad1-2dc98c4b69e2';
-
-function LegalModal({ title, onClose }) {
-  const content = title === 'Privacy Policy' ? [] : [
-    'By using MyTrainingMate you agree to these Terms of Service.',
-    'MyTrainingMate is provided "as is" without warranty. Consult a physician before starting any exercise program.',
-    'Pro subscriptions are billed monthly or annually. Cancel anytime — cancellations take effect at the end of the billing period.',
-    'Refunds are subject to the App Store or Google Play refund policies.',
-    'We reserve the right to update these terms. Continued use constitutes acceptance.',
-    'Contact: support@mytrainingmate.app',
-  ];
-  return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:400, display:'flex', alignItems:'flex-end' }} onClick={onClose}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--paper)', width:'100%', maxHeight:'80vh', overflowY:'auto', padding:'28px 24px 48px', boxSizing:'border-box', borderRadius:'20px 20px 0 0', color:'var(--ink)' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-          <div style={{ fontFamily:'var(--font-display)', fontSize:22, fontStyle:'italic' }}>{title}</div>
-          <button onClick={onClose} style={{ background:'transparent', border:'1px solid var(--rule)', fontFamily:'var(--font-mono)', fontSize:14, color:'var(--ink-60)', cursor:'pointer', width:30, height:30, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
-        </div>
-        {content.map((p,i) => (
-          <div key={i} style={{ fontFamily:'var(--font-body)', fontSize:13.5, lineHeight:1.65, color:'var(--ink)', marginBottom:14, paddingBottom:14, borderBottom: i<content.length-1 ? '1px solid var(--rule)' : 'none' }}>{p}</div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const TERMS_URL   = 'https://app.termly.io/document/terms-of-service/23c9f527-18f2-4b26-aad1-2dc98c4b69e2';
 
 function AuthScreen({ state, dispatch, navigate }) {
   const { useState: useStateAuth } = React;
@@ -1597,7 +1574,6 @@ function AuthScreen({ state, dispatch, navigate }) {
   const [termsOk, setTermsOk] = useStateAuth(false);
   const [error, setError] = useStateAuth('');
   const [loading, setLoading] = useStateAuth(false);
-  const [legalModal, setLegalModal] = useStateAuth(null);
   const set = (k, v) => setForm(f => ({...f, [k]:v}));
   const GOALS = [
     { id:'muscle',   label:'Build Muscle',    sub:'Gain strength & size' },
@@ -1694,9 +1670,8 @@ function AuthScreen({ state, dispatch, navigate }) {
       <button onClick={()=>setMode('signup')} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:17, background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer', marginBottom:12 }}>Create Account</button>
       <button onClick={()=>setMode('signin')} style={{ width:'100%', fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:0.18, textTransform:'uppercase', padding:16, background:'transparent', color:'var(--ink)', border:'1px solid var(--ink)', cursor:'pointer' }}>Sign In</button>
       <div style={{ fontFamily:'var(--font-mono)', fontSize:8.5, color:'var(--ink-60)', textAlign:'center', marginTop:20, lineHeight:1.7 }}>
-        By continuing you agree to our <span onClick={()=>setLegalModal('Terms of Service')} style={{ textDecoration:'underline', cursor:'pointer' }}>Terms of Service</span> and <span onClick={()=>window.open(PRIVACY_URL,'_blank')} style={{ textDecoration:'underline', cursor:'pointer' }}>Privacy Policy</span>
+        By continuing you agree to our <span onClick={()=>window.open(TERMS_URL,'_blank')} style={{ textDecoration:'underline', cursor:'pointer' }}>Terms of Service</span> and <span onClick={()=>window.open(PRIVACY_URL,'_blank')} style={{ textDecoration:'underline', cursor:'pointer' }}>Privacy Policy</span>
       </div>
-      {legalModal && <LegalModal title={legalModal} onClose={()=>setLegalModal(null)}/>}
     </div>
   );
 
@@ -1877,7 +1852,7 @@ function AuthScreen({ state, dispatch, navigate }) {
             {termsOk && <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           </div>
           <span style={{ fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:0.1, textAlign:'left' }}>
-            I agree to the <span onClick={()=>setLegalModal('Terms of Service')} style={{ textDecoration:'underline', cursor:'pointer' }}>Terms of Service</span> and <span onClick={e=>{e.stopPropagation();window.open(PRIVACY_URL,'_blank');}} style={{ textDecoration:'underline', cursor:'pointer' }}>Privacy Policy</span>
+            I agree to the <span onClick={e=>{e.stopPropagation();window.open(TERMS_URL,'_blank');}} style={{ textDecoration:'underline', cursor:'pointer' }}>Terms of Service</span> and <span onClick={e=>{e.stopPropagation();window.open(PRIVACY_URL,'_blank');}} style={{ textDecoration:'underline', cursor:'pointer' }}>Privacy Policy</span>
           </span>
         </button>
       </>}
